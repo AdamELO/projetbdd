@@ -18,6 +18,8 @@ def get_points() -> int:
 def logout():
     app.storage.user['authenticated'] = False
     app.storage.user['username'] = ''
+    app.storage.user['level'] = 0
+    app.storage.user['points'] = 0
 
 
 def require_auth(func):
