@@ -7,6 +7,9 @@ def is_logged_in() :
 def get_username() :
     return app.storage.user.get('username', '')
 
+def get_id() :
+    return app.storage.user.get('id', 0)
+
 def get_level() :
     return app.storage.user.get('level', 0)
 

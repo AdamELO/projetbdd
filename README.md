@@ -25,3 +25,10 @@ DB_PORT = 5432  # port PostgreSQL par défaut
 ```bash
 python3 main.py
 ```
+
+### si pas encore de db:
+ajouter dossier .nicegui et ajouter fichier storage-user-cbdf037b-622d-4334-ba07-a6edd2eef574.json 
+dans le fichier mettre
+```JSON
+{"authenticated":true,"username":"test","id":11,"email":"test@test.com","level":1,"points":0,"theme_name":"noël","theme_image":"snow.gif","title_name":null}
+```

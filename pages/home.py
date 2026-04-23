@@ -1,6 +1,9 @@
 from nicegui import ui
 from components.navbar import navbar
 from components.auth import get_username, require_auth
+from components.stars import stars_rating
+from components.item import item_card
+from components.comments import comments
 
 #page d'accueil
 @ui.page('/')
@@ -21,14 +24,7 @@ def home_page():
                     {'name' : 'item3', 'description': "theme noel", 'price': 30, 'is_bought': False}
                 ]
                 for item in fake_items:
-                    with ui.card().classes("w-60 card-theme"):
-                        ui.label(f'{item['name']}').classes('text-xl text-center')
-                        ui.label(f' nom : {item['name']}')
-                        ui.label(f'description : {item['description']}')
-                        ui.label(f'Prix : {item['price']} pts')
-                        btn_buy = ui.button('Acheter', on_click=lambda : ui.notify("todo",position="top" ,type="info")).classes('bg-gray-800 w-full text-center').props('flat color=white').bind_enabled_from(item, 'is_bought', lambda x: not x)
-                        btn_buy.bind_icon_from(item, 'is_bought', lambda x: 'lock' if x else 'shopping_cart')
-                        btn_buy.bind_text_from(item, 'is_bought', lambda x: 'Acheter' if not x else 'déjà possédé')
+                    item_card(item)
 
         # Résumé du mois
         with ui.card().classes('w-full max-w-4xl card-theme'):
@@ -41,16 +37,8 @@ def home_page():
 
                 with ui.column().classes('items-center gap-1'):
                     ui.label('Note moyenne').classes('text-sm text-gray-500 text-theme')
-                    with ui.row().classes('items-center gap-1'):
-                        note_moyenne = 3
-                        for i in range(5):
-                            if i < int(note_moyenne):
-                                ui.icon('star').classes('text-yellow-500 text-xl')
-                            elif i < note_moyenne:
-                                ui.icon('star_half').classes('text-yellow-500 text-xl')
-                            else:
-                                ui.icon('star_outline').classes('text-gray-300 text-xl')
-                        ui.label(f'{note_moyenne}/5').classes('text-sm font-bold')
+                    note_moyenne = 3
+                    stars_rating(note_moyenne, size='text-xl')
 
             ui.separator()
 
@@ -58,22 +46,7 @@ def home_page():
                 {'name': 'nom1', 'active_title': 'Étudiant' , 'rating': 5, 'comment': 'Très bien'},
                 {'name': 'nom2', 'active_title': 'Expert en résumés', 'rating': 1, 'comment': 'Nul!!!'},
             ]
-
-            if fake_comments:
-                ui.label('Quelques Commentaires').classes('text-md font-bold px-4 pt-2')
-                for com in fake_comments:
-                    with ui.card().classes('w-full mx-4 my-1 bg-gray-50 card-theme'):
-                        with ui.row().classes('w-full items-center justify-between'):
-                            ui.label(f'{com['name']} - {com['active_title']}').classes('font-bold text-sm capitalize')
-                            with ui.row().classes('items-center'):
-                                for i in range(5):
-                                    if i < com['rating']:
-                                        ui.icon('star').classes('text-yellow-500 text-sm')
-                                    else:
-                                        ui.icon('star_outline').classes('text-gray-300 text-sm')
-                        ui.label(f'{com['comment']}').classes('text-sm text-gray-700 text-theme')
-            else:
-                ui.label('Aucun commentaire pour le moment.').classes('text-sm text-gray-400 px-4 py-2 italic')
+            comments(fake_comments, "Quelque commentaires")
 
             ui.separator()
             with ui.row().classes('w-full justify-center'):

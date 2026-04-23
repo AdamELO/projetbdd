@@ -3,7 +3,7 @@ from components.auth import get_theme_name, get_theme_image
 
 def background_theme() :
     if get_theme_image():
-        ui.query('body').style (f'background-image: url("images/theme/{get_theme_image()}"); background-size: cover; background-attachment: fixed;')
+        ui.query('body').style (f'background-image: url("/images/theme/{get_theme_image()}"); background-size: cover; background-attachment: fixed;')
         css_img_theme()
     elif get_theme_name():
         ui.query('body').style(f'background-color: {get_theme_name()}')
