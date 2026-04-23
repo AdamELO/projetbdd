@@ -1,19 +1,18 @@
-from docutils.nodes import description
 from nicegui import ui
 from components.navbar import navbar
 from components.auth import get_username, require_auth
 
 #page d'accueil
 @ui.page('/')
-@require_auth
 def home_page():
+    require_auth()
     navbar()
 
-    ui.label(f'Bienvenue {get_username()}').classes('text-2xl m-1 w-full text-center capitalize')
+    ui.label(f'Bienvenue {get_username()}').classes('text-2xl m-1 w-full text-center text-theme capitalize')
 
     with ui.column().classes('w-full items-center p-4 gap-4'):
         # Nouveautés dans le shop
-        with ui.card().classes('w-full max-w-4xl'):
+        with ui.card().classes('w-full max-w-4xl card-theme'):
             ui.label('Nouveautés dans la boutique :').classes('text-xl m-4 w-full text-center capitalize underline')
             with ui.row().classes('w-full justify-around gap-2'):
                 fake_items = [
@@ -22,7 +21,7 @@ def home_page():
                     {'name' : 'item3', 'description': "theme noel", 'price': 30, 'is_bought': False}
                 ]
                 for item in fake_items:
-                    with ui.card().classes("w-60"):
+                    with ui.card().classes("w-60 card-theme"):
                         ui.label(f'{item['name']}').classes('text-xl text-center')
                         ui.label(f' nom : {item['name']}')
                         ui.label(f'description : {item['description']}')
@@ -32,16 +31,16 @@ def home_page():
                         btn_buy.bind_text_from(item, 'is_bought', lambda x: 'Acheter' if not x else 'déjà possédé')
 
         # Résumé du mois
-        with ui.card().classes('w-full max-w-4xl'):
+        with ui.card().classes('w-full max-w-4xl card-theme'):
             ui.label('Meilleur résumé du mois').classes('text-xl m-4 w-full text-center capitalize underline')
             with ui.row().classes('w-full items-center justify-between p-4'):
                 with ui.column().classes('gap-1'):
                     ui.label('Base de données pour les nuls').classes('text-lg font-bold')
-                    ui.label('Cours : H303 - BDD').classes('text-sm text-gray-600')
-                    ui.label('Par : xxx').classes('text-sm text-gray-500')
+                    ui.label('Cours : H303 - BDD').classes('text-sm text-gray-600 text-theme')
+                    ui.label('Par : xxx').classes('text-sm text-gray-500 text-theme')
 
                 with ui.column().classes('items-center gap-1'):
-                    ui.label('Note moyenne').classes('text-sm text-gray-500')
+                    ui.label('Note moyenne').classes('text-sm text-gray-500 text-theme')
                     with ui.row().classes('items-center gap-1'):
                         note_moyenne = 3
                         for i in range(5):
@@ -63,7 +62,7 @@ def home_page():
             if fake_comments:
                 ui.label('Quelques Commentaires').classes('text-md font-bold px-4 pt-2')
                 for com in fake_comments:
-                    with ui.card().classes('w-full mx-4 my-1 bg-gray-50'):
+                    with ui.card().classes('w-full mx-4 my-1 bg-gray-50 card-theme'):
                         with ui.row().classes('w-full items-center justify-between'):
                             ui.label(f'{com['name']} - {com['active_title']}').classes('font-bold text-sm capitalize')
                             with ui.row().classes('items-center'):
@@ -72,7 +71,7 @@ def home_page():
                                         ui.icon('star').classes('text-yellow-500 text-sm')
                                     else:
                                         ui.icon('star_outline').classes('text-gray-300 text-sm')
-                        ui.label(f'{com['comment']}').classes('text-sm text-gray-700')
+                        ui.label(f'{com['comment']}').classes('text-sm text-gray-700 text-theme')
             else:
                 ui.label('Aucun commentaire pour le moment.').classes('text-sm text-gray-400 px-4 py-2 italic')
 

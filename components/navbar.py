@@ -1,9 +1,11 @@
 from nicegui import ui
-from components.auth import is_logged_in,get_username, get_level, get_points, logout
+from components.auth import is_logged_in, get_username, get_level, get_points, get_title, logout
+from components.background import background_theme
 
 def navbar():
     ui.page_title('projet bdd')
-    ui.query('body').classes('bg-gray-200')
+    background_theme()
+
     with ui.header().classes('bg-gray-800 text-white items-center'):
         #icone d'accueil
         ui.button(icon='school', on_click=lambda: ui.navigate.to('/')) \
@@ -20,11 +22,13 @@ def navbar():
 
             ui.space()
 
-            #niv + pts
+            #niv + pts + titre actif si existe
             ui.badge(f'lv {get_level()}').props('color=primary').classes("text-xl rounded-full p-2")
             ui.badge(f'{get_points()} pts').props('color=primary').classes("text-xl p-2")
+            if get_title():
+                ui.label(f'{get_title()}').classes("text-sm text-gray-200 italic")
 
-            # Menu déroulant profil et déco
+            # menu profil et déco
             with ui.button(icon='account_circle', text=f"{get_username()}").props('flat color=white'):
                 with ui.menu():
                     ui.menu_item('Mon profil', lambda: ui.navigate.to('/profile'))
