@@ -185,6 +185,57 @@ cur.execute("""
     ON CONFLICT DO NOTHING
 """)
 
+# ── 8. TRANSACTIONS (ACHATS) ──────────────────────────────────────────────────
+print("Insertion des transactions (achats)...")
+
+# Charger tous les objets cosmétiques depuis la DB
+cur.execute("SELECT Id, Nom FROM ObjetCosmetique")
+objets_db = cur.fetchall()
+
+import unicodedata
+
+def normaliser(texte):
+    """Enlève accents et met en minuscules pour comparaison"""
+    if texte is None:
+        return ""
+    texte = texte.strip().lower()
+    texte = unicodedata.normalize('NFD', texte)
+    texte = ''.join(c for c in texte if unicodedata.category(c) != 'Mn')
+    return texte
+
+# Dictionnaire nom normalisé -> id
+objets_map = {normaliser(nom): id_ for id_, nom in objets_db}
+
+for utilisateur in root_u.findall("utilisateur"):
+    uid = int(utilisateur.get("id"))
+    achats = utilisateur.find("achats")
+    if achats is None:
+        continue
+    for objet in achats.findall("objet"):
+        if objet.text is None:
+            continue
+        nom_normalise = normaliser(objet.text)
+        id_objet = objets_map.get(nom_normalise)
+        if id_objet is None:
+            print(f"  ⚠️  Objet non trouvé : '{objet.text}' (normalisé: '{nom_normalise}')")
+            continue
+
+        # Récupérer le prix de l'objet
+        cur.execute("SELECT Prix FROM ObjetCosmetique WHERE Id = %s", (id_objet,))
+        prix = cur.fetchone()[0]
+
+        cur.execute("""
+            INSERT INTO Transaction (Date, Montant, IdObjetCosmetique, IdUtilisateur)
+            VALUES (CURRENT_DATE, %s, %s, %s)
+        """, (-prix, id_objet, uid))
+
+        # Ajouter dans ObjetUtilisateur
+        cur.execute("""
+            INSERT INTO ObjetUtilisateur (IdObjetCosmetique, IdUtilisateur, EstActif)
+            VALUES (%s, %s, FALSE)
+            ON CONFLICT DO NOTHING
+        """, (id_objet, uid))
+        
 conn.commit()
 cur.close()
 conn.close()
