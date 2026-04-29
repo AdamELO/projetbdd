@@ -79,7 +79,8 @@
     <utilisateur id="3">
         <nomUtilisateur>camille_leroy</nomUtilisateur>
         <email>camille.leroy@univ.be</email>
-        <dateInscription>2025-09-18</dateInscription>
+        =
+        : <dateInscription>2025-09-18</dateInscription>
         <points>2100</points>
         <niveau>7</niveau>
         <titreActif>Maître du savoir</titreActif>

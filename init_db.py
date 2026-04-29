@@ -7,16 +7,15 @@ from config import DB_HOST, DB_NAME, DB_USER, DB_PASSWORD, DB_PORT
 conn = psycopg2.connect(host=DB_HOST, dbname=DB_NAME, user=DB_USER, password=DB_PASSWORD, port=DB_PORT)
 cur = conn.cursor()
 
-# ── 1. COURS ──────────────────────────────────────────────────────────────────
-print("Insertion des cours...")
+# COURS 
 with open("data/cours.csv", encoding="utf-8") as f:
     reader = csv.DictReader(f)
     for row in reader:
         cur.execute("""
-            INSERT INTO Cours (Code, Nom, Faculte)
-            VALUES (%s, %s, %s)
-            ON CONFLICT DO NOTHING
-        """, (row["code_cours"], row["nom"], row["faculte"]))
+    INSERT INTO Cours (Code, Nom, Faculte, Credits)
+    VALUES (%s, %s, %s, %s)
+    ON CONFLICT DO NOTHING
+""", (row["code_cours"], row["nom"], row["faculte"], int(row["credits"])))
 
 # ── 2. ANNÉE ACADÉMIQUE ───────────────────────────────────────────────────────
 print("Insertion des années académiques...")
@@ -27,7 +26,6 @@ cur.execute("""
 """)
 
 # ── 3. OBJETS COSMÉTIQUES ─────────────────────────────────────────────────────
-print("Insertion des objets cosmétiques...")
 tree = ET.parse("data/recompenses.xml")
 root = tree.getroot()
 
