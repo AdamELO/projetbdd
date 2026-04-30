@@ -7,7 +7,7 @@ def comments(comments, text_comm = "tout les commentaires"):
         for comment in comments:
             with ui.card().classes('w-full mx-4 my-1 bg-gray-50 card-theme'):
                 with ui.row().classes('w-full items-center justify-between'):
-                    ui.label(f'{comment["name"]} - {comment["active_title"]}').classes('font-bold text-sm capitalize')
+                    ui.label(f'{comment["name"]}').classes('font-bold text-sm capitalize')
                     stars_rating(comment['rating'], size='text-sm')
                 ui.label(comment['comment']).classes('text-sm text-gray-700 text-theme')
     else:
