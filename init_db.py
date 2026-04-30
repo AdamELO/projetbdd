@@ -2,6 +2,7 @@ import csv
 import json
 import xml.etree.ElementTree as ET
 import psycopg2
+import bcrypt
 from config import DB_HOST, DB_NAME, DB_USER, DB_PASSWORD, DB_PORT
 
 conn = psycopg2.connect(host=DB_HOST, dbname=DB_NAME, user=DB_USER, password=DB_PASSWORD, port=DB_PORT)
@@ -79,13 +80,14 @@ for utilisateur in root_u.findall("utilisateur"):
     niveau_el = utilisateur.find("niveau")
     points = int(points_el.text) if points_el is not None and points_el.text else 0
     niveau = int(niveau_el.text) if niveau_el is not None and niveau_el.text else 1
-
+    
+    password_hash = bcrypt.hashpw("password123".encode(), bcrypt.gensalt()).decode()
     cur.execute("""
-        INSERT INTO Utilisateur (IdUtilisateur, Nom, Email, MotDePasse, DateInscription, Points, Niveau)
-        VALUES (%s, %s, %s, %s, %s, %s, %s)
-        ON CONFLICT DO NOTHING
-    """, (uid, nom, email, "motdepasse_hash", date_inscription, points, niveau))
-
+    INSERT INTO Utilisateur (IdUtilisateur, Nom, Email, MotDePasse, DateInscription, Points, Niveau)
+    VALUES (%s, %s, %s, %s, %s, %s, %s)
+    ON CONFLICT DO NOTHING
+    """, (uid, nom, email, password_hash, date_inscription, points, niveau))
+    
     nom_to_id[nom] = uid
 
 # ── 5. RÉSUMÉS ────────────────────────────────────────────────────────────────

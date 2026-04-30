@@ -5,7 +5,7 @@ def top_10_users():
     conn = get_connection()
     cur = conn.cursor()
     cur.execute("""
-        SELECT IdUtilisateur as id, Nom as nom, Points as points
+        SELECT IdUtilisateur as id, Nom as nom, Niveau as niveau, Points as points
         FROM Utilisateur
         ORDER BY Points DESC
         LIMIT 10

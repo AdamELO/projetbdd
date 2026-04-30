@@ -3,54 +3,9 @@ from components.dialogs import open_resumes_dialog, open_add_resume_dialog
 from components.filters import filter_list_cours, get_filtered_cours, apply_filters, reset_filters
 from components.navbar import navbar
 from components.auth import require_auth
+from queries.cours import get_all_cours
 
-# Données simulées
-classes = [
-    {'code': 'INFO101', 'nom': 'Introduction à la programmation', 'faculte': 'Sciences', 'annee': '2024-2025', 'nb_resumes': 3,
-     'resumes': [
-         {'id': 1, 'titre': 'Résumé chapitre 1-3', 'date': '2024-10-15', 'note': 4.5, 'nb_commentaires': 8},
-         {'id': 2, 'titre': 'Résumé chapitre 4-6', 'date': '2024-11-02', 'note': 3.8, 'nb_commentaires': 3},
-         {'id': 3, 'titre': 'Résumé examen', 'date': '2024-12-10', 'note': None, 'nb_commentaires': 0},
-     ]},
-    {'code': 'MATH201', 'nom': 'Algèbre linéaire', 'faculte': 'Sciences', 'annee': '2024-2025', 'nb_resumes': 2,
-     'resumes': [
-         {'id': 4, 'titre': 'Matrices et déterminants', 'date': '2024-09-20', 'note': 4.0, 'nb_commentaires': 5},
-         {'id': 5, 'titre': 'Espaces vectoriels', 'date': '2024-10-30', 'note': None, 'nb_commentaires': 0},
-     ]},
-    {'code': 'PHYS101', 'nom': 'Physique générale', 'faculte': 'Sciences', 'annee': '2024-2025', 'nb_resumes': 1,
-     'resumes': [
-         {'id': 6, 'titre': 'Mécanique newtonienne', 'date': '2024-11-15', 'note': 4.8, 'nb_commentaires': 12},
-     ]},
-    {'code': 'DROIT100', 'nom': 'Introduction au droit', 'faculte': 'Droit', 'annee': '2024-2025', 'nb_resumes': 4,
-     'resumes': [
-         {'id': 7, 'titre': 'Sources du droit', 'date': '2024-09-10', 'note': 3.5, 'nb_commentaires': 2},
-         {'id': 8, 'titre': 'Droit civil', 'date': '2024-10-05', 'note': 4.2, 'nb_commentaires': 6},
-         {'id': 9, 'titre': 'Droit pénal', 'date': '2024-11-20', 'note': None, 'nb_commentaires': 0},
-         {'id': 10, 'titre': 'Résumé final', 'date': '2024-12-15', 'note': 4.9, 'nb_commentaires': 15},
-     ]},
-    {'code': 'ECON101', 'nom': 'Microéconomie', 'faculte': 'Économie', 'annee': '2024-2025', 'nb_resumes': 0, 'resumes': []},
-    {'code': 'HIST200', 'nom': 'Histoire contemporaine', 'faculte': 'Lettres', 'annee': '2023-2024', 'nb_resumes': 2,
-     'resumes': [
-         {'id': 11, 'titre': 'Guerres mondiales', 'date': '2024-03-10', 'note': 4.1, 'nb_commentaires': 7},
-         {'id': 12, 'titre': 'Guerre froide', 'date': '2024-04-22', 'note': 3.9, 'nb_commentaires': 4},
-     ]},
-    {'code': 'CHIM101', 'nom': 'Chimie organique', 'faculte': 'Sciences', 'annee': '2024-2025', 'nb_resumes': 1,
-     'resumes': [
-         {'id': 13, 'titre': 'Hydrocarbures', 'date': '2024-10-08', 'note': None, 'nb_commentaires': 0},
-     ]},
-    {'code': 'PSYC100', 'nom': 'Psychologie générale', 'faculte': 'Sciences humaines', 'annee': '2024-2025', 'nb_resumes': 3,
-     'resumes': [
-         {'id': 14, 'titre': 'Cognition', 'date': '2024-09-25', 'note': 4.6, 'nb_commentaires': 9},
-         {'id': 15, 'titre': 'Mémoire et apprentissage', 'date': '2024-10-30', 'note': 4.3, 'nb_commentaires': 5},
-         {'id': 16, 'titre': 'Émotions', 'date': '2024-11-28', 'note': 3.7, 'nb_commentaires': 2},
-     ]},
-    {'code': 'LANG300', 'nom': 'Linguistique appliquée', 'faculte': 'Lettres', 'annee': '2023-2024', 'nb_resumes': 0, 'resumes': []},
-    {'code': 'BIO101', 'nom': 'Biologie cellulaire', 'faculte': 'Sciences', 'annee': '2024-2025', 'nb_resumes': 2,
-     'resumes': [
-         {'id': 17, 'titre': 'La cellule', 'date': '2024-09-15', 'note': 4.4, 'nb_commentaires': 6},
-         {'id': 18, 'titre': 'Division cellulaire', 'date': '2024-11-10', 'note': None, 'nb_commentaires': 0},
-     ]},
-]
+classes = get_all_cours()
 
 PER_PAGE = 5
 
@@ -101,7 +56,7 @@ def list_classes(list_container, current_page, search_code, search_nom, search_f
                                 ui.label(cours['code']).classes('text-sm font-bold')
                             with ui.item_section():
                                 ui.item_label(cours['nom'])
-                                ui.item_label(f'{cours["faculte"]} - {cours["annee"]}').props('caption').classes('text-theme')
+                                ui.item_label(f'{cours["faculte"]}').props('caption').classes('text-theme')
                             with ui.item_section().props('side'):
                                 ui.label(f'{cours["nb_resumes"]} résumé(s)').classes('text-sm text-theme')
                             with ui.item_section().props('side'):
