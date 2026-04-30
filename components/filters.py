@@ -6,10 +6,9 @@ def filter_list_cours(classes, on_search, on_reset):
     with ui.card().classes('w-full max-w-4xl mx-auto mt-4 card-theme'):
         ui.label('Filtres').classes('text-lg font-bold')
         with ui.row().classes('w-full items-center gap-4'):
-            search_code = ui.input(label='Code du cours').classes('w-48 text-theme').props("label-color='primary'")
-            search_nom = ui.input(label='Nom du cours').classes('w-64 text-theme').props("label-color='primary'")
-            search_faculte = ui.select(label='Faculté', options=['Toutes'] + facultes).classes('w-48 text-theme').props(
-                "label-color='primary'")
+            search_code = ui.input(label='Code du cours').classes('w-48 text-theme').props("label-color='primary'").on('keydown.enter', lambda: on_search())
+            search_nom = ui.input(label='Nom du cours').classes('w-64 text-theme').props("label-color='primary'").on('keydown.enter', lambda: on_search())
+            search_faculte = ui.select(label='Faculté', options=['Toutes'] + facultes, on_change=lambda: on_search()).classes('w-48 text-theme').props("label-color='primary'")                
 
             ui.button('Rechercher', icon='search', on_click=lambda: on_search()).props('flat color=white')
             ui.button('Réinitialiser', icon='refresh', on_click=lambda: on_reset(search_code, search_nom, search_faculte)).props('flat color=white')
