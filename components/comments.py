@@ -1,7 +1,7 @@
 from nicegui import ui
 from components.stars import stars_rating
 
-def comments(comments, text_comm = "tout les commentaires"):
+def comments(comments, text_comm = "Commentaires"):
     if comments:
         ui.label(f'{text_comm}').classes('text-md font-bold px-4 pt-2')
         for comment in comments:

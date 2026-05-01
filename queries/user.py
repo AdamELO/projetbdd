@@ -19,26 +19,6 @@ def login(username, password):
         }
     return None
 
-
-#def register(nom, email, mot_de_passe):
-#    conn = get_connection()
-#    cur = conn.cursor()
-#    try:
-#        cur.execute("""
-#            INSERT INTO Utilisateur (Nom, Email, MotDePasse)
-#            VALUES (%s, %s, %s)
-#            RETURNING IdUtilisateur
-#        """, (nom, email, mot_de_passe))
-#        row = cur.fetchone()
-#        conn.commit()
-#        return {'id': row[0]}
-#    except Exception:
-#        conn.rollback()
-#        return None
-#    finally:
-#        conn.close()
-
-
 def register(nom, email, mot_de_passe):
     conn = get_connection()
     cur = conn.cursor()

@@ -1,6 +1,6 @@
-from nicegui import ui
+from nicegui import ui, app
 from components.stars import stars_rating
-
+from queries.resume import add_resume
 
 #dialog liste résumés
 def open_resumes_dialog(cours):
@@ -46,7 +46,6 @@ def open_add_resume_dialog(cours):
         ui.separator()
 
         titre = ui.input('Titre du résumé').classes('w-full')
-        description = ui.textarea('Description').classes('w-full')
         upload = ui.upload(label='Fichier (PDF ou DOCX)', auto_upload=True,
                            max_file_size=10_000_000) \
             .props('accept=".pdf,.docx"').classes('w-full')
@@ -57,9 +56,15 @@ def open_add_resume_dialog(cours):
             if not titre.value:
                 error.set_text('Le titre est obligatoire')
                 return
-            ui.notify(f'Résumé "{titre.value}" ajouté !', type='positive')
-            dialog.close()
-
+            id_utilisateur = app.storage.user.get('id')
+            success = add_resume(titre.value, None, cours['code'], id_utilisateur)
+            if success:
+                ui.notify(f'Résumé "{titre.value}" ajouté !', type='positive')
+                dialog.close()
+                ui.navigate.to(f'/classes')
+            else:
+                error.set_text('Erreur lors de l\'ajout du résumé')
+        
         with ui.row().classes('w-full justify-end mt-4 gap-2'):
             ui.button('Annuler', on_click=dialog.close).props('flat')
             ui.button('Ajouter', on_click=submit).props('color=primary')
