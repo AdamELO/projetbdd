@@ -22,21 +22,27 @@ def register_page():
             ui.link('Se connecter', '/login').classes('text-blue-500')
 
 
-
 def check_register(username, email, password, confirm, error):
     if not username.value or not password.value or not email.value:
         error.set_text('Remplissez tous les champs svp')
-        #ui.notify(message='Remplissez tous les champs svp', position='top', type='negative')
     elif not re.match(r'^[\w.-]+@[\w.-]+\.\w+$', email.value):
         error.set_text('Email invalide')
     elif password.value != confirm.value:
         error.set_text('Les mots de passe ne correspondent pas')
-    elif register(username.value, email.value, password.value):
-        app.storage.user['authenticated'] = True
-        app.storage.user['username'] = username.value
-        app.storage.user['email'] = email.value
-        app.storage.user['level'] = 1
-        app.storage.user['points'] = 0
-        ui.navigate.to('/')
     else:
-        error.set_text('Nom d\'utilisateur ou email déjà pris')
+        print(f"Appel register avec: {username.value}, {email.value}")
+        result = register(username.value, email.value, password.value)
+        print(f"Résultat register: {result}")
+        if result:
+            app.storage.user['authenticated'] = True
+            app.storage.user['id'] = result['id']
+            app.storage.user['username'] = username.value
+            app.storage.user['email'] = email.value
+            app.storage.user['level'] = 1
+            app.storage.user['points'] = 0
+            app.storage.user['title_name'] = None
+            app.storage.user['theme_name'] = None
+            app.storage.user['theme_image'] = None
+            ui.navigate.to('/')
+        else:
+            error.set_text('Nom d\'utilisateur ou email déjà pris')

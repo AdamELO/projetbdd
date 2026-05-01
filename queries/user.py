@@ -19,18 +19,42 @@ def login(username, password):
         }
     return None
 
-#inscription
-def register(username, email, password):
+
+#def register(nom, email, mot_de_passe):
+#    conn = get_connection()
+#    cur = conn.cursor()
+#    try:
+#        cur.execute("""
+#            INSERT INTO Utilisateur (Nom, Email, MotDePasse)
+#            VALUES (%s, %s, %s)
+#            RETURNING IdUtilisateur
+#        """, (nom, email, mot_de_passe))
+#        row = cur.fetchone()
+#        conn.commit()
+#        return {'id': row[0]}
+#    except Exception:
+#        conn.rollback()
+#        return None
+#    finally:
+#        conn.close()
+
+
+def register(nom, email, mot_de_passe):
+    conn = get_connection()
+    cur = conn.cursor()
     try:
-        conn = get_connection()
-        cur = conn.cursor()
-        password_hash = bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
-        cur.execute(
-            "INSERT INTO Utilisateur (nom, email, motdepasse) VALUES (%s, %s, %s)",
-            (username, email, password_hash)
-        )
+        password_hash = bcrypt.hashpw(mot_de_passe.encode(), bcrypt.gensalt()).decode()
+        cur.execute("""
+            INSERT INTO Utilisateur (Nom, Email, MotDePasse)
+            VALUES (%s, %s, %s)
+            RETURNING IdUtilisateur
+        """, (nom, email, password_hash))
+        row = cur.fetchone()
         conn.commit()
+        return {'id': row[0]}
+    except Exception as e:
+        print(f"ERREUR REGISTER: {e}")
+        conn.rollback()
+        return None
+    finally:
         conn.close()
-        return True
-    except:
-        return False
