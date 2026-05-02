@@ -16,6 +16,16 @@ def profile_page():
 
     with ui.column().classes('w-full items-center gap-4 p-4'):
 
+        with ui.card().classes('w-full max-w-4xl card-theme'):
+            with ui.row().classes('w-full items-center justify-center gap-6 p-4'):
+                ui.icon('account_circle').classes('text-6xl')
+            with ui.column().classes('gap-1'):
+                ui.label(app.storage.user.get('username', '')).classes('text-2xl font-bold text-theme')
+                ui.label(f'Niveau {app.storage.user.get("level", 0)}').classes('text-theme')
+                ui.label(f'{app.storage.user.get("points", 0)} points').classes('text-theme')
+                if active_title:
+                    ui.label(f'🏆 {active_title}').classes('text-theme font-semibold')
+
         #partie badges
         with ui.card().classes('w-full max-w-4xl card-theme'):
             ui.label('mes badges').classes('text-xl font-bold text-center w-full capitalize underline')

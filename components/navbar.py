@@ -22,12 +22,7 @@ def navbar():
 
             ui.space()
 
-            #niv + pts + titre actif si existe
-            ui.badge(f'lv {get_level()}').props('color=primary').classes("text-xl rounded-full p-2")
-            ui.badge(f'{get_points()} pts').props('color=primary').classes("text-xl p-2")
-            if get_title():
-                ui.label(f'{get_title()}').classes("text-sm text-gray-200 italic")
-
+            
             # menu profil et déco
             with ui.button(icon='account_circle', text=f"{get_username()}").props('flat color=white'):
                 with ui.menu():

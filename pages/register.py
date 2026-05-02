@@ -42,5 +42,6 @@ def register_page():
         error = ui.label('').classes('text-red-500')
 
         ui.button('S\'inscrire', on_click=lambda: check_register(username, email, password, confirm, error)).classes('w-full mt-4 bg-gray-800').props('flat color=white')        
-        ui.label('Déjà un compte ?')
-        ui.link('Se connecter', '/login').classes('text-blue-500')
+        with ui.row().classes('w-full justify-center items-center gap-1'):
+            ui.label('Déjà un compte ?')
+            ui.link('Se connecter', '/login').classes('text-blue-500')
