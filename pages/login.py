@@ -41,10 +41,9 @@ def check_login(username_input, password_input, error):
             app.storage.user['theme_image'] = None
 
         if active_title:
-            app.storage.user['title_name'] = active_title['title']['name']
+            app.storage.user['title_name'] = active_title['name']
         else:
             app.storage.user['title_name'] = None
-
         ui.navigate.to('/')
     else:
         error.set_text('Identifiants incorrects')

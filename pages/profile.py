@@ -1,7 +1,8 @@
 from nicegui import ui, app
 from components.navbar import navbar
 from components.auth import get_id, get_title, get_theme_name, require_auth
-from queries.object import user_titles, user_themes, user_badges
+from queries.object import user_titles, user_themes, user_badges, user_cosmetiques
+
 
 #page de profil
 @ui.page('/profile')
@@ -71,3 +72,19 @@ def profile_page():
                             ui.button('Activer', on_click= lambda : ui.notify('Thème activé')).props('flat color="white"').classes('text-xs bg-gray-800')
             else:
                 ui.label('Aucun thème débloqué').classes('text-center text-gray-400 text-theme italic w-full')
+        
+
+# Après la section thèmes :
+        with ui.card().classes('w-full max-w-4xl card-theme'):
+            ui.label('mes cosmétiques').classes('text-xl font-bold text-center w-full capitalize underline')
+    
+            cosmetiques = user_cosmetiques(user_id)
+            if cosmetiques:
+                with ui.grid(columns=3).classes('w-full gap-4 p-4 justify-items-center'):
+                    for c in cosmetiques:
+                        with ui.column().classes('items-center gap-1'):
+                            ui.icon('auto_awesome').classes('text-5xl text-yellow-500')
+                            ui.label(c['name']).classes('text-xs text-center text-theme')
+                            ui.label(c['description']).classes('text-xs text-center text-gray-400 italic')
+            else:
+                ui.label('Aucun cosmétique débloqué').classes('text-center text-gray-400 text-theme italic w-full p-4')

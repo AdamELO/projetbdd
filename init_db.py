@@ -63,6 +63,13 @@ for objet in root.findall("objet"):
             VALUES (%s, %s)
             ON CONFLICT DO NOTHING
         """, (obj_id, image.text if image is not None else None))
+    elif type_ == "cosmetique":
+        icone = objet.find("icone")
+        cur.execute("""
+            INSERT INTO Cosmetique (Id, Icone)
+            VALUES (%s, %s)
+            ON CONFLICT DO NOTHING
+        """, (obj_id, icone.text if icone is not None else None))
 
 # ── 4. UTILISATEURS ───────────────────────────────────────────────────────────
 print("Insertion des utilisateurs...")
@@ -235,8 +242,30 @@ for utilisateur in root_u.findall("utilisateur"):
             VALUES (%s, %s, FALSE)
             ON CONFLICT DO NOTHING
         """, (id_objet, uid))
-        
+
+# ── 9. ACTIVER LE TITRE ACTIF ─────────────────────────────────────────────────
+print("Activation des titres actifs...")
+for utilisateur in root_u.findall("utilisateur"):
+    uid = int(utilisateur.get("id"))
+    titre_actif_el = utilisateur.find("titreActif")
+    if titre_actif_el is None or not titre_actif_el.text:
+        continue
+    titre_actif = titre_actif_el.text.strip()
+    
+    cur.execute("""
+        UPDATE ObjetUtilisateur ou
+        SET EstActif = TRUE
+        FROM ObjetCosmetique obj
+        JOIN Titre t ON obj.Id = t.Id
+        WHERE ou.IdObjetCosmetique = obj.Id
+        AND ou.IdUtilisateur = %s
+        AND obj.Nom = %s
+    """, (uid, titre_actif))
+print("Resynchronisation des séquences...")
+cur.execute("SELECT setval(pg_get_serial_sequence('Utilisateur', 'idutilisateur'), (SELECT MAX(IdUtilisateur) FROM Utilisateur));")
+cur.execute("SELECT setval(pg_get_serial_sequence('Contribution', 'id'), (SELECT MAX(Id) FROM Contribution));")
+      
 conn.commit()
 cur.close()
 conn.close()
-print("✅ Base de données initialisée avec succès !")
+print("Base de données initialisée avec succès !")

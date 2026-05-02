@@ -56,6 +56,12 @@ CREATE TABLE Theme (
     Image VARCHAR(255)
 );
 
+-- Cosmetique
+CREATE TABLE Cosmetique (
+    Id INTEGER PRIMARY KEY REFERENCES ObjetCosmetique(Id),
+    Icone VARCHAR(255)
+);
+
 -- Objet possédé par utilisateur
 CREATE TABLE ObjetUtilisateur (
     IdObjetCosmetique INTEGER REFERENCES ObjetCosmetique(Id),

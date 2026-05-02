@@ -37,16 +37,16 @@ def user_active_title(user_id):
     conn = get_connection()
     cur = conn.cursor()
     cur.execute("""
-        SELECT obj.Nom
+        SELECT obj.Nom as name
         FROM ObjetCosmetique obj
         JOIN ObjetUtilisateur obju ON obj.id = obju.IdObjetCosmetique
         JOIN Titre t ON obj.Id = t.Id
-        WHERE obju.IdUtilisateur = %s AND obju.EstActif = TRUE;
-       """, (user_id,))
-    results = cur.fetchall()
+        WHERE obju.IdUtilisateur = %s AND obju.EstActif = TRUE
+        LIMIT 1
+    """, (user_id,))
+    result = cur.fetchone()
     conn.close()
-    # print(results)
-    return results
+    return result
 
 #theme actif de l'utilisateur
 def user_active_theme(user_id):
@@ -73,6 +73,22 @@ def user_badges(user_id):
         FROM ObjetCosmetique obj
         JOIN ObjetUtilisateur obju ON obj.Id = obju.IdObjetCosmetique
         JOIN Badge b ON obj.Id = b.Id
+        WHERE obju.IdUtilisateur = %s
+        ORDER BY obj.Id
+    """, (user_id,))
+    results = cur.fetchall()
+    conn.close()
+    return results
+
+def user_cosmetiques(user_id):
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("""
+        SELECT obj.Id as id, obj.Nom as name, obj.Description as description,
+               c.Icone as icone, obju.EstActif as actif
+        FROM ObjetCosmetique obj
+        JOIN ObjetUtilisateur obju ON obj.Id = obju.IdObjetCosmetique
+        JOIN Cosmetique c ON obj.Id = c.Id
         WHERE obju.IdUtilisateur = %s
         ORDER BY obj.Id
     """, (user_id,))
