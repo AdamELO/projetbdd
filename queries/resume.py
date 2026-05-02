@@ -1,6 +1,7 @@
 from db import get_connection
 
 def add_resume(titre, description, code_cours, id_utilisateur):
+    print("ADD_RESUME APPELÉ")
     conn = get_connection()
     cur = conn.cursor()
     try:
@@ -10,7 +11,7 @@ def add_resume(titre, description, code_cours, id_utilisateur):
             VALUES (%s)
             RETURNING Id
         """, (id_utilisateur,))
-        id_contribution = cur.fetchone()[0]
+        id_contribution = cur.fetchone()['id']
 
         # Puis insérer dans Resume
         cur.execute("""

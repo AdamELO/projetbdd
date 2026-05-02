@@ -53,6 +53,8 @@ def open_add_resume_dialog(cours):
         error = ui.label('').classes('text-red-500')
 
         def submit():
+            print("SUBMIT APPELÉ")
+
             if not titre.value:
                 error.set_text('Le titre est obligatoire')
                 return
@@ -67,6 +69,6 @@ def open_add_resume_dialog(cours):
         
         with ui.row().classes('w-full justify-end mt-4 gap-2'):
             ui.button('Annuler', on_click=dialog.close).props('flat')
-            ui.button('Ajouter', on_click=submit).props('color=primary')
+            ui.button('Ajouter', on_click=lambda: submit()).props('color=primary')
 
     dialog.open()

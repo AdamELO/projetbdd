@@ -31,7 +31,7 @@ def register(nom, email, mot_de_passe):
         """, (nom, email, password_hash))
         row = cur.fetchone()
         conn.commit()
-        return {'id': row[0]}
+        return {'id': row['idutilisateur']}
     except Exception as e:
         print(f"ERREUR REGISTER: {e}")
         conn.rollback()
