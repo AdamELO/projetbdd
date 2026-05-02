@@ -69,3 +69,21 @@ def get_evaluations_by_resume(resume_id):
     results = cur.fetchall()
     conn.close()
     return [dict(row) for row in results]
+
+
+def add_cours(code, nom, faculte, credits):
+    conn = get_connection()
+    cur = conn.cursor()
+    try:
+        cur.execute("""
+            INSERT INTO Cours (Code, Nom, Faculte, Credits)
+            VALUES (%s, %s, %s, %s)
+        """, (code, nom, faculte, credits))
+        conn.commit()
+        return True
+    except Exception as e:
+        print(f"ERREUR add_cours: {e}", flush=True)
+        conn.rollback()
+        return False
+    finally:
+        conn.close()
