@@ -24,10 +24,12 @@ def classes_page():
         dialog_subtitle = ui.label('').classes('text-sm text-gray-500 mb-2')
         ui.separator()
         titre_input = ui.input('Titre du résumé').classes('w-full')
+        upload = ui.upload(label='Fichier (PDF ou DOCX)', auto_upload=True,
+                           max_file_size=10_000_000) \
+            .props('accept=".pdf,.docx"').classes('w-full')
         error_label = ui.label('').classes('text-red-500')
 
         def submit():
-            print("SUBMIT APPELÉ", flush=True)
             cours = selected_cours['value']
             if not titre_input.value.strip():
                 error_label.set_text('Le titre est obligatoire')
@@ -54,6 +56,7 @@ def classes_page():
         dialog_subtitle.set_text(cours['code'])
         titre_input.value = ''
         error_label.set_text('')
+        upload.reset()
         add_dialog.open()
 
     # --- Dialog ajout cours ---
@@ -110,9 +113,6 @@ def classes_page():
     show_list()
 
 
-
-
-
 def list_classes(list_container, current_page, search_code, search_nom, search_faculte, classes, open_add):    
     list_container.clear()
     filtered = get_filtered_cours(classes, search_code, search_nom, search_faculte)
@@ -143,11 +143,11 @@ def list_classes(list_container, current_page, search_code, search_nom, search_f
                             with ui.item_section().props('side'):
                                 ui.button('Voir résumés', on_click=lambda c=cours: open_resumes_dialog({**c, 'resumes': get_resumes_by_cours(c['code'])})).classes('bg-gray-800').props('flat color=white')
                             with ui.item_section().props('side'):
-                                ui.button('Ajouter', icon='add', on_click=lambda c=cours: open_add_resume_dialog(c)).props('flat color=positive').classes('border')
+                                ui.button('Ajouter', icon='add', on_click=lambda c=cours: open_add(c)).props('flat color=positive').classes('border')
 
         with ui.card().classes('w-full justify-center max-w-4xl card-theme'):
             with ui.row().classes('w-full justify-center mt-4'):
-                p = ui.pagination(1, total_pages, direction_links=True, value=current_page['value'], on_change=lambda e: change_page(e.value, current_page, lambda: list_classes(list_container, current_page, search_code, search_nom, search_faculte, classes)))
+                p = ui.pagination(1, total_pages, direction_links=True, value=current_page['value'], on_change=lambda e: change_page(e.value, current_page, lambda: list_classes(list_container, current_page, search_code, search_nom, search_faculte, classes, open_add)))
 
                 ui.label().bind_text_from(p, 'value', lambda v: f'Page {v}')
 

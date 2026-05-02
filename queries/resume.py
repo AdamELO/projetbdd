@@ -27,3 +27,35 @@ def add_resume(titre, description, code_cours, id_utilisateur):
         return False
     finally:
         conn.close()
+
+def update_resume(resume_id, titre, description):
+    conn = get_connection()
+    cur = conn.cursor()
+    try:
+        cur.execute("""
+            UPDATE Resume SET Titre = %s, Description = %s
+            WHERE Id = %s
+        """, (titre, description, resume_id))
+        conn.commit()
+        return True
+    except Exception as e:
+        print(f"ERREUR update_resume: {e}", flush=True)
+        conn.rollback()
+        return False
+    finally:
+        conn.close()
+
+def delete_resume(resume_id):
+    conn = get_connection()
+    cur = conn.cursor()
+    try:
+        cur.execute("DELETE FROM Resume WHERE Id = %s", (resume_id,))
+        cur.execute("DELETE FROM Contribution WHERE Id = %s", (resume_id,))
+        conn.commit()
+        return True
+    except Exception as e:
+        print(f"ERREUR delete_resume: {e}", flush=True)
+        conn.rollback()
+        return False
+    finally:
+        conn.close()
