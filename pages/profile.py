@@ -1,7 +1,7 @@
 from nicegui import ui, app
 from components.navbar import navbar
 from components.auth import get_id, get_title, get_theme_name, require_auth
-from queries.object import user_titles, user_themes, user_badges, user_cosmetiques
+from queries.object import user_titles, user_themes, user_badges, user_cosmetiques, activate_title
 
 
 #page de profil
@@ -47,10 +47,7 @@ def profile_page():
         with ui.card().classes('w-full max-w-4xl card-theme'):
             ui.label('mes titres').classes('text-xl font-bold text-center w-full capitalize underline')
 
-            if active_title:
-                ui.label(f'Titre actif : {active_title}').classes('text-center text-gray-600 text-theme font-semibold mb-2')
-            else:
-                ui.label('Aucun titre actif').classes('text-center text-theme italic mb-2')
+            active_title_label = ui.label(f'Titre actif : {active_title}' if active_title else 'Aucun titre actif').classes('text-center text-gray-600 text-theme font-semibold mb-2')
 
             titles = user_titles(user_id)
             if titles:
@@ -58,7 +55,15 @@ def profile_page():
                     for t in titles:
                         with ui.row().classes('items-center justify-between w-full border rounded p-2'):
                             ui.label(t['name']).classes('font-semibold text-gray-600 text-theme')
-                            ui.button('Activer', on_click=lambda: ui.notify('Titre activé')).props('flat color="white"').classes('text-xs bg-gray-800')
+                            def activate(tid=t['id'], tname=t['name']):
+                                success = activate_title(user_id, tid)
+                                if success:
+                                    app.storage.user['title_name'] = tname
+                                    active_title_label.set_text(f'Titre actif : {tname}')
+                                    ui.notify(f'Titre "{tname}" activé !', type='positive')
+                                else:
+                                    ui.notify('Erreur lors de l\'activation', type='negative')
+                            ui.button('Activer', on_click=activate).props('flat color="white"').classes('text-xs bg-gray-800')
             else:
                 ui.label('Aucun titre débloqué').classes('text-center text-gray-400 text-theme italic w-full')
 
