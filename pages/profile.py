@@ -1,7 +1,7 @@
 from nicegui import ui, app
 from components.navbar import navbar
 from components.auth import get_id, get_title, get_theme_name, require_auth
-from queries.object import user_titles, user_themes, user_badges, user_cosmetiques, activate_title
+from queries.object import user_titles, user_themes, user_badges, user_cosmetiques, activate_title, activate_theme, deactivate_theme
 
 
 #page de profil
@@ -23,9 +23,7 @@ def profile_page():
                 ui.label(app.storage.user.get('username', '')).classes('text-2xl font-bold text-theme')
                 ui.label(f'Niveau {app.storage.user.get("level", 0)}').classes('text-theme')
                 ui.label(f'{app.storage.user.get("points", 0)} points').classes('text-theme')
-                if active_title:
-                    ui.label(f'🏆 {active_title}').classes('text-theme font-semibold')
-
+               
         #partie badges
         with ui.card().classes('w-full max-w-4xl card-theme'):
             ui.label('mes badges').classes('text-xl font-bold text-center w-full capitalize underline')
@@ -70,22 +68,35 @@ def profile_page():
         #partie theme
         with ui.card().classes('w-full max-w-4xl card-theme'):
             ui.label('mes thèmes').classes('text-xl font-bold text-center w-full capitalize underline')
-
+            active_theme_label = ui.label(f'Thème actif : {active_theme}' if active_theme else 'Aucun thème actif').classes('text-center text-gray-600 text-theme font-semibold mb-2')
             if active_theme:
-                ui.label(f'Thème actif : {active_theme}').classes('text-center text-gray-600 text-theme font-semibold mb-2')
-            else:
-                ui.label('Aucun thème actif').classes('text-center text-gray-400 italic mb-2')
-
+                def deactivate():
+                    success = deactivate_theme(user_id)
+                    if success:
+                        app.storage.user['theme_name'] = None
+                        app.storage.user['theme_image'] = None
+                        ui.notify('Thème désactivé', type='positive')
+                        ui.navigate.to('/profile')
+                ui.button('Désactiver le thème', icon='format_color_reset', on_click=deactivate).props('flat color=negative').classes('w-full')
+            
             themes = user_themes(user_id)
             if themes:
                 with ui.grid(columns=2).classes('w-full gap-2 p-4'):
                     for th in themes:
                         with ui.row().classes('items-center justify-between w-full border rounded p-2'):
-                            if th['image']:
-                                ui.image(f"/images/theme/{th['image']}").classes('w-8 h-8 object-cover rounded')
-                                ui.label(th['name']).classes('font-semibold text-gray-600 text-theme')
-                            ui.button('Activer', on_click= lambda : ui.notify('Thème activé')).props('flat color="white"').classes('text-xs bg-gray-800')
-            else:
+                            ui.label(th['name']).classes('font-semibold text-gray-600 text-theme')
+                            def activate_th(tid=th['id'], tname=th['name']):
+                                success = activate_theme(user_id, tid)
+                                if success:
+                                    app.storage.user['theme_name'] = tname
+                                    app.storage.user['theme_image'] = None
+                                    active_theme_label.set_text(f'Thème actif : {tname}')
+                                    ui.notify(f'Thème "{tname}" activé !', type='positive')
+                                    ui.navigate.to('/profile')
+                                else:
+                                    ui.notify('Erreur lors de l\'activation', type='negative')
+                            ui.button('Activer', on_click=activate_th).props('flat color="white"').classes('text-xs bg-gray-800')
+            else:          
                 ui.label('Aucun thème débloqué').classes('text-center text-gray-400 text-theme italic w-full')
         
 

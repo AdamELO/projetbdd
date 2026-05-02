@@ -121,3 +121,48 @@ def activate_title(user_id, title_id):
         return False
     finally:
         conn.close()
+
+def activate_theme(user_id, theme_id):
+    conn = get_connection()
+    cur = conn.cursor()
+    try:
+        cur.execute("""
+            UPDATE ObjetUtilisateur 
+            SET EstActif = FALSE
+            WHERE IdUtilisateur = %s AND IdObjetCosmetique IN (
+                SELECT Id FROM Theme
+            )
+        """, (user_id,))
+        cur.execute("""
+            UPDATE ObjetUtilisateur 
+            SET EstActif = TRUE
+            WHERE IdUtilisateur = %s AND IdObjetCosmetique = %s
+        """, (user_id, theme_id))
+        conn.commit()
+        return True
+    except Exception as e:
+        print(f"ERREUR activate_theme: {e}", flush=True)
+        conn.rollback()
+        return False
+    finally:
+        conn.close()
+
+def deactivate_theme(user_id):
+    conn = get_connection()
+    cur = conn.cursor()
+    try:
+        cur.execute("""
+            UPDATE ObjetUtilisateur 
+            SET EstActif = FALSE
+            WHERE IdUtilisateur = %s AND IdObjetCosmetique IN (
+                SELECT Id FROM Theme
+            )
+        """, (user_id,))
+        conn.commit()
+        return True
+    except Exception as e:
+        print(f"ERREUR deactivate_theme: {e}", flush=True)
+        conn.rollback()
+        return False
+    finally:
+        conn.close()
