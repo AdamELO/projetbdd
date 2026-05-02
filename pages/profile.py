@@ -1,7 +1,7 @@
 from nicegui import ui, app
 from components.navbar import navbar
 from components.auth import get_id, get_title, get_theme_name, require_auth
-from queries.object import user_titles, user_themes
+from queries.object import user_titles, user_themes, user_badges
 
 #page de profil
 @ui.page('/profile')
@@ -16,21 +16,22 @@ def profile_page():
     with ui.column().classes('w-full items-center gap-4 p-4'):
 
         #partie badges
-        badges = [
-            {'img': 'images/badge/circle_bronze.png', 'description': 'medaille de bronze'},
-            {'img': 'images/badge/circle_silver.png', 'description': "medaille d'argent"},
-            {'img': 'images/badge/diamond_silver.png', 'description': "medaille d'argent"},
-            {'img': 'images/badge/flower_gold.png', 'description': "medaille d'or"},
-            {'img': 'images/badge/clover.png', 'description': 'medaille chance'},
-        ]
-
         with ui.card().classes('w-full max-w-4xl card-theme'):
             ui.label('mes badges').classes('text-xl font-bold text-center w-full capitalize underline')
-
-            with ui.grid(columns=3).classes('w-full gap-4 p-4 justify-items-center'):
-                for badge in badges:
-                    ui.image(badge['img']).tooltip(badge['description']).classes('w-24 h-28 object-contain p-2').style('overflow: visible;')
-
+    
+            badges = user_badges(user_id)
+            if badges:
+                with ui.grid(columns=3).classes('w-full gap-4 p-4 justify-items-center'):
+                    for badge in badges:
+                        with ui.column().classes('items-center gap-1'):
+                            if badge['image']:
+                                ui.image(f"/images/badge/{badge['image']}").tooltip(badge['description']).classes('w-24 h-28 object-contain p-2')
+                            else:
+                                ui.icon('military_tech').classes('text-5xl text-yellow-500')
+                            ui.label(badge['name']).classes('text-xs text-center text-theme')
+            else:
+                ui.label('Aucun badge débloqué').classes('text-center text-gray-400 text-theme italic w-full p-4')
+        
         #partie titre
         with ui.card().classes('w-full max-w-4xl card-theme'):
             ui.label('mes titres').classes('text-xl font-bold text-center w-full capitalize underline')

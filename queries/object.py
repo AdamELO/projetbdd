@@ -63,3 +63,19 @@ def user_active_theme(user_id):
     # print(result)
     conn.close()
     return result
+
+def user_badges(user_id):
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("""
+        SELECT obj.Id as id, obj.Nom as name, obj.Description as description, 
+               b.Image as image, obju.EstActif as actif
+        FROM ObjetCosmetique obj
+        JOIN ObjetUtilisateur obju ON obj.Id = obju.IdObjetCosmetique
+        JOIN Badge b ON obj.Id = b.Id
+        WHERE obju.IdUtilisateur = %s
+        ORDER BY obj.Id
+    """, (user_id,))
+    results = cur.fetchall()
+    conn.close()
+    return results
