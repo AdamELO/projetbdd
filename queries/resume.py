@@ -59,3 +59,28 @@ def delete_resume(resume_id):
         return False
     finally:
         conn.close()
+
+def add_evaluation(note, commentaire, id_resume, id_utilisateur):
+    conn = get_connection()
+    cur = conn.cursor()
+    try:
+        cur.execute("""
+            INSERT INTO Contribution (IdUtilisateur)
+            VALUES (%s)
+            RETURNING Id
+        """, (id_utilisateur,))
+        id_contribution = cur.fetchone()['id']
+
+        cur.execute("""
+            INSERT INTO Evaluation (Id, Note, Commentaire, IdResume)
+            VALUES (%s, %s, %s, %s)
+        """, (id_contribution, note, commentaire, id_resume))
+
+        conn.commit()
+        return True
+    except Exception as e:
+        print(f"ERREUR add_evaluation: {e}", flush=True)
+        conn.rollback()
+        return False
+    finally:
+        conn.close()

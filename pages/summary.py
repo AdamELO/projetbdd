@@ -4,7 +4,7 @@ from components.auth import require_auth
 from components.stars import stars_rating
 from components.comments import comments
 from queries.cours import get_resume_by_id, get_evaluations_by_resume
-from queries.resume import update_resume, delete_resume
+from queries.resume import update_resume, delete_resume, add_evaluation
 
 @ui.page('/summary/{summary_id}')
 def summary_page(summary_id):
@@ -26,7 +26,7 @@ def summary_page(summary_id):
         ui.separator()
         titre_edit = ui.input('Titre', value=summary['titre']).classes('w-full')
         upload_edit = ui.upload(label='Nouveau fichier (PDF ou DOCX)', auto_upload=True,
-                            max_file_size=10_000_000) \
+                                max_file_size=10_000_000) \
             .props('accept=".pdf,.docx"').classes('w-full')
         error_edit = ui.label('').classes('text-red-500')
 
@@ -45,6 +45,7 @@ def summary_page(summary_id):
         with ui.row().classes('w-full justify-end mt-4 gap-2'):
             ui.button('Annuler', on_click=edit_dialog.close).props('flat')
             ui.button('Modifier', on_click=submit_edit).props('color=primary')
+
     # --- Dialog suppression ---
     with ui.dialog() as delete_dialog, ui.card().classes('w-full max-w-sm'):
         ui.label('Supprimer ce résumé ?').classes('text-xl font-bold')
@@ -62,6 +63,42 @@ def summary_page(summary_id):
         with ui.row().classes('w-full justify-end mt-4 gap-2'):
             ui.button('Annuler', on_click=delete_dialog.close).props('flat')
             ui.button('Supprimer', on_click=confirm_delete).props('color=negative')
+
+    # --- Dialog ajout commentaire ---
+    with ui.dialog() as comment_dialog, ui.card().classes('w-full max-w-lg'):
+        ui.label('Ajouter un commentaire').classes('text-xl font-bold')
+        ui.separator()
+        
+        note_value = {'value': 5}
+        ui.label('Note :').classes('text-sm font-bold mt-2')
+        with ui.row().classes('gap-1'):
+            def set_note(n, label):
+                note_value['value'] = n
+                label.set_text(f'Note : {n}/5')
+            note_label = ui.label('Note : 5/5').classes('text-sm text-gray-500')
+            with ui.row().classes('gap-1'):
+                for i in range(1, 6):
+                    ui.button(str(i), on_click=lambda n=i: set_note(n, note_label)).props('flat').classes('text-yellow-500')
+
+        commentaire_input = ui.textarea('Commentaire').classes('w-full')
+        error_comment = ui.label('').classes('text-red-500')
+
+        def submit_comment():
+            if not commentaire_input.value.strip():
+                error_comment.set_text('Le commentaire est obligatoire')
+                return
+            id_utilisateur = app.storage.user.get('id')
+            success = add_evaluation(note_value['value'], commentaire_input.value.strip(), summary_id, id_utilisateur)
+            if success:
+                ui.notify('Commentaire ajouté !', type='positive')
+                comment_dialog.close()
+                ui.navigate.to(f'/summary/{summary_id}')
+            else:
+                error_comment.set_text('Erreur lors de l\'ajout du commentaire')
+
+        with ui.row().classes('w-full justify-end mt-4 gap-2'):
+            ui.button('Annuler', on_click=comment_dialog.close).props('flat')
+            ui.button('Publier', on_click=submit_comment).props('color=primary')
 
     # --- Page ---
     with ui.column().classes('w-full items-center p-4 gap-4'):
@@ -86,10 +123,12 @@ def summary_page(summary_id):
             comments(evaluations)
             ui.separator()
 
-            with ui.row().classes('w-full justify-center gap-2'):
+            with ui.row().classes('w-full justify-center gap-2 p-2'):
                 ui.button('Télécharger le résumé', icon='download',
                           on_click=lambda: ui.notify('résumé.pdf', position='top', type='positive')) \
                     .classes('bg-gray-800').props('flat color=white')
+                ui.button('Ajouter un commentaire', icon='comment',
+                          on_click=comment_dialog.open).props('flat color=primary')
 
                 if is_author:
                     ui.button('Modifier', icon='edit', on_click=edit_dialog.open).props('flat color=primary')
