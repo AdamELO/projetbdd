@@ -1,9 +1,10 @@
-from nicegui import ui
+from nicegui import ui, app
 from components.navbar import navbar
-from components.auth import get_username, require_auth
+from components.auth import get_username, require_auth, get_id
 from components.stars import stars_rating
 from components.item import item_card
 from components.comments import comments
+from queries.object import get_lasts_items
 
 #page d'accueil
 @ui.page('/')
@@ -16,14 +17,10 @@ def home_page():
     with ui.column().classes('w-full items-center p-4 gap-4'):
         # Nouveautés dans le shop
         with ui.card().classes('w-full max-w-4xl card-theme'):
-            ui.label('Nouveautés dans la boutique :').classes('text-xl m-4 w-full text-center capitalize underline')
+            ui.label().bind_text_from(app.storage.user, 'points', lambda pts: f'Nouveautés dans la boutique : vous avez actuellement {pts} pts').classes('text-2xl m-1 w-full text-center text-theme capitalize underline')
             with ui.row().classes('w-full justify-around gap-2'):
-                fake_items = [
-                    {'name' : 'item1', 'description': "badge", 'price': 10, 'is_bought': False},
-                    {'name' : 'item2', 'description': "titre", 'price': 500, 'is_bought': True},
-                    {'name' : 'item3', 'description': "theme noel", 'price': 30, 'is_bought': False}
-                ]
-                for item in fake_items:
+                lasts_items = get_lasts_items(get_id())
+                for item in lasts_items:
                     item_card(item)
 
         # Résumé du mois

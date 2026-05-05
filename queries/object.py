@@ -166,3 +166,162 @@ def deactivate_theme(user_id):
         return False
     finally:
         conn.close()
+
+def get_all_titles():
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("""
+        SELECT obj.Id, obj.Nom as name, obj.Description, obj.Prix as price
+        FROM ObjetCosmetique obj
+        JOIN Titre t ON obj.Id = t.Id
+    """)
+    results = cur.fetchall()
+    conn.close()
+    return results
+
+def get_all_badges():
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("""
+        SELECT obj.Id, obj.Nom as name, obj.Description, obj.Prix as price, b.Image
+        FROM ObjetCosmetique obj
+        JOIN Badge b ON obj.Id = b.Id
+    """)
+    results = cur.fetchall()
+    conn.close()
+    return results
+
+def get_all_themes():
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("""
+        SELECT obj.Id, obj.Nom as name, obj.Description, obj.Prix as price, t.Image
+        FROM ObjetCosmetique obj
+        JOIN Theme t ON obj.Id = t.Id
+    """)
+    results = cur.fetchall()
+    conn.close()
+    return results
+
+
+def get_all_cosmetic():
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("""
+        SELECT obj.Id, obj.Nom as name, obj.Description, obj.Prix as price, c.Icone
+        FROM ObjetCosmetique obj
+        JOIN Cosmetique c ON obj.Id = c.Id
+    """)
+    results = cur.fetchall()
+    conn.close()
+    return results
+
+
+
+def get_badges_not_owned(user_id):
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("""
+        SELECT obj.Id, obj.Nom as name, obj.Description, obj.Prix as price, b.Image
+        FROM ObjetCosmetique obj
+        JOIN Badge b ON obj.Id = b.Id
+        LEFT JOIN ObjetUtilisateur obju ON obj.Id = obju.IdObjetCosmetique AND obju.IdUtilisateur = %s
+        WHERE obju.IdObjetCosmetique IS NULL
+    """, (user_id,))
+    results = cur.fetchall()
+    conn.close()
+    return results
+
+def get_themes_not_owned(user_id):
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("""
+        SELECT obj.Id, obj.Nom as name, obj.Description, obj.Prix as price, t.Image
+        FROM ObjetCosmetique obj
+        JOIN Theme t ON obj.Id = t.Id
+        LEFT JOIN ObjetUtilisateur obju ON obj.Id = obju.IdObjetCosmetique AND obju.IdUtilisateur = %s
+        WHERE obju.IdObjetCosmetique IS NULL
+    """, (user_id,))
+    results = cur.fetchall()
+    conn.close()
+    return results
+
+def get_titles_not_owned(user_id):
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("""
+        SELECT obj.Id, obj.Nom as name, obj.Description, obj.Prix as price
+        FROM ObjetCosmetique obj
+        JOIN Titre t ON obj.Id = t.Id
+        LEFT JOIN ObjetUtilisateur obju ON obj.Id = obju.IdObjetCosmetique AND obju.IdUtilisateur = %s
+        WHERE obju.IdObjetCosmetique IS NULL
+    """, (user_id,))
+    results = cur.fetchall()
+    conn.close()
+    return results
+
+def get_cosmetic_not_owned(user_id):
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("""
+        SELECT obj.Id, obj.Nom as name, obj.Description, obj.Prix as price, c.Icone
+        FROM ObjetCosmetique obj
+        JOIN Cosmetique c ON obj.Id = c.Id
+        LEFT JOIN ObjetUtilisateur obju ON obj.Id = obju.IdObjetCosmetique AND obju.IdUtilisateur = %s
+        WHERE obju.IdObjetCosmetique IS NULL
+    """, (user_id,))
+    results = cur.fetchall()
+    conn.close()
+    return results
+
+def buy_object(object_id, user_id, price):
+    conn = get_connection()
+    cur = conn.cursor()
+    try:
+        cur.execute("""
+            SELECT * FROM ObjetUtilisateur
+            WHERE IdObjetCosmetique = %s AND IdUtilisateur = %s
+        """, (object_id, user_id))
+        if cur.fetchone():
+            return False
+
+        cur.execute("""
+            UPDATE Utilisateur SET Points = Points - %s
+            WHERE IdUtilisateur = %s AND Points >= %s
+        """, (price, user_id, price))
+
+        if cur.rowcount == 0:
+            conn.rollback()
+            return False
+
+        cur.execute("""
+            INSERT INTO ObjetUtilisateur (IdObjetCosmetique, IdUtilisateur)
+            VALUES (%s, %s)
+        """, (object_id, user_id))
+
+        cur.execute("""
+            INSERT INTO Transaction (Montant, IdObjetCosmetique, IdUtilisateur, IdContribution)
+            VALUES (%s, %s, %s, NULL)
+        """, (-price, object_id, user_id))
+
+        conn.commit()
+        return True
+    except :
+        conn.rollback()
+        return False
+    finally:
+        conn.close()
+
+def get_lasts_items(user_id=None, n=3):
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("""
+        SELECT obj.Id, obj.Nom as name, obj.Description, obj.Prix as price, EXISTS (SELECT * FROM ObjetUtilisateur obju WHERE obju.IdObjetCosmetique = obj.Id AND obju.IdUtilisateur = %s) as is_bought
+        FROM ObjetCosmetique obj
+        JOIN Cosmetique c ON obj.Id = c.Id
+        ORDER BY obj.Id DESC
+        LIMIT %s
+    """, (user_id, n))
+    results = cur.fetchall()
+    conn.close()
+    return results
