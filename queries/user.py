@@ -38,3 +38,27 @@ def register(nom, email, mot_de_passe):
         return None
     finally:
         conn.close()
+
+def award_points(user_id, amount, contribution_id=None):
+    print("AWARD_POINTS APPELÉ")
+    conn = get_connection()
+    cur = conn.cursor()
+    try:
+        cur.execute("""
+            UPDATE Utilisateur 
+            SET Points = Points + %s,
+                Niveau = ((Points + %s) / 300) + 1
+            WHERE IdUtilisateur = %s
+        """, (amount, amount, user_id))
+        cur.execute("""
+            INSERT INTO Transaction (Montant, IdUtilisateur, IdContribution)
+            VALUES (%s, %s, %s)
+        """, (amount, user_id, contribution_id))
+        conn.commit()
+        return True
+    except Exception as e:
+        print(f"ERREUR AWARD_POINTS: {e}")
+        conn.rollback()
+        return False
+    finally:
+        conn.close()
