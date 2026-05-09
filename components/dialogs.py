@@ -1,4 +1,5 @@
 from nicegui import ui, app
+from components.auth import get_points
 from components.stars import stars_rating
 from queries.resume import add_resume
 
@@ -60,7 +61,9 @@ def open_add_resume_dialog(cours):
                 return
             id_utilisateur = app.storage.user.get('id')
             success = add_resume(titre.value, None, cours['code'], id_utilisateur)
+            print("kqjkdqjhdkqjhd")
             if success:
+                app.storage.user['points'] = get_points() + 500
                 ui.notify(f'Résumé "{titre.value}" ajouté !', type='positive')
                 dialog.close()
                 ui.navigate.to(f'/classes')

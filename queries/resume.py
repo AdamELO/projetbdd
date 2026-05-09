@@ -87,7 +87,6 @@ def add_evaluation(note, commentaire, id_resume, id_utilisateur):
         conn.commit()
 
         award_points(id_utilisateur, 100, id_contribution)
-        award_points(auteur_resume, int(note) * 50, id_contribution)
         return True
     except Exception as e:
         print(f"ERREUR add_evaluation: {e}", flush=True)

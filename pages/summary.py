@@ -1,6 +1,6 @@
 from nicegui import ui, app
 from components.navbar import navbar
-from components.auth import require_auth
+from components.auth import get_points, require_auth
 from components.stars import stars_rating
 from components.comments import comments
 from queries.cours import get_resume_by_id, get_evaluations_by_resume
@@ -90,6 +90,7 @@ def summary_page(summary_id):
             id_utilisateur = app.storage.user.get('id')
             success = add_evaluation(note_value['value'], commentaire_input.value.strip(), summary_id, id_utilisateur)
             if success:
+                app.storage.user['points'] = get_points() + 100
                 ui.notify('Commentaire ajouté !', type='positive')
                 comment_dialog.close()
                 ui.navigate.to(f'/summary/{summary_id}')
