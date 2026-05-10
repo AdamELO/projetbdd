@@ -55,24 +55,24 @@ def best_rated_resumes():
     conn = get_connection()
     cur = conn.cursor()
     cur.execute("""
-        SELECT r.Code as code, r.Titre as titre, AVG(e.Note) as note_moyenne
-        FROM Resume r
-        JOIN Evaluation e ON r.Id = e.IdResume
-        GROUP BY r.Id, r.Code, r.Titre
-        HAVING AVG(e.Note) = (
-            SELECT MAX(avg_note) FROM (
-                SELECT AVG(e2.Note) AS avg_note
-                FROM Resume r2
-                JOIN Evaluation e2 ON r2.Id = e2.IdResume
-                WHERE r2.Code = r.Code
-                GROUP BY r2.Id
-            ) AS sous_requete
+        WITH Moyennes AS (
+            SELECT r.Code, r.Titre, ROUND(AVG(e.Note), 2) as note_moyenne
+            FROM Resume r
+            JOIN Evaluation e ON r.Id = e.IdResume
+            GROUP BY r.Id, r.Code, r.Titre
         )
-        ORDER BY r.Code
+        SELECT m1.Code as code, m1.Titre as titre, CAST(m1.note_moyenne AS FLOAT) as note_moyenne
+        FROM Moyennes m1
+        WHERE m1.note_moyenne = (
+            SELECT MAX(m2.note_moyenne)
+            FROM Moyennes m2
+            WHERE m2.Code = m1.Code
+        )
+        ORDER BY m1.Code
     """)
     results = cur.fetchall()
     conn.close()
-    return results
+    return [dict(row) for row in results]
 
 # Requête 5 : Les utilisateurs n'ayant jamais publié de résumé
 def users_no_resume():
@@ -90,7 +90,8 @@ def users_no_resume():
     """)
     results = cur.fetchall()
     conn.close()
-    return results
+    return [dict(row) for row in results]
+
 
 # Requête 6 : L'objet cosmétique le plus acheté
 def most_bought_item():
