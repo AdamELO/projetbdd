@@ -14,6 +14,20 @@ def top_10_users():
     conn.close()
     return results
 
+#Requête 1,5 : Les 10 utilisateurs ayant le plus haut niveau (en cas d'égalité, on départage par les points)
+def top_10_by_level():
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("""
+        SELECT IdUtilisateur as id, Nom as nom, Niveau as niveau, Points as points
+        FROM Utilisateur
+        ORDER BY Niveau DESC, Points DESC
+        LIMIT 10
+    """)
+    results = cur.fetchall()
+    conn.close()
+    return results
+
 # Requête 2 : Les utilisateurs ayant publié des résumés dans au moins 3 cours différents
 def users_min_3_courses():
     conn = get_connection()
