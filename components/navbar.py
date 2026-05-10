@@ -19,7 +19,8 @@ def navbar():
                 .props('flat color=white')
             ui.button('Boutique', on_click=lambda: ui.navigate.to('/shop')) \
                 .props('flat color=white')
-
+            ui.button('Analyses', on_click=lambda: ui.navigate.to('/request')) \
+                .props('flat color=white')
             ui.space()
 
             

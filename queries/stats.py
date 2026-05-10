@@ -35,17 +35,20 @@ def users_min_3_courses():
 def most_summarized_course():
     conn = get_connection()
     cur = conn.cursor()
+    # On utilise une sous-requête pour trouver le MAX du COUNT
     cur.execute("""
         SELECT r.Code as code, c.Nom as nom, COUNT(*) as nb_resumes
         FROM Resume r
         JOIN Cours c ON r.Code = c.Code
         GROUP BY r.Code, c.Nom
-        ORDER BY nb_resumes DESC
-        LIMIT 1
+        HAVING COUNT(*) = (
+            SELECT MAX(cnt) 
+            FROM (SELECT COUNT(*) as cnt FROM Resume GROUP BY Code)
+        )
     """)
-    result = cur.fetchone()
+    results = cur.fetchall() # On utilise fetchall car il peut y en avoir plusieurs
     conn.close()
-    return result
+    return results
 
 # Requête 4 : Les résumés les mieux notés pour chaque cours
 def best_rated_resumes():
