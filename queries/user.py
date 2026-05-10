@@ -39,26 +39,68 @@ def register(nom, email, mot_de_passe):
     finally:
         conn.close()
 
-def award_points(user_id, amount, contribution_id=None):
-    print("AWARD_POINTS APPELÉ")
+def award_points(user_id, amount, contribution_id=None, cur=None):
+    local_conn = None
+    if cur is None:
+        local_conn = get_connection()
+        cur = local_conn.cursor()
+    try:
+        cur.execute("UPDATE Utilisateur SET Points = Points + %s WHERE IdUtilisateur = %s", (amount, user_id))
+        cur.execute("INSERT INTO Transaction (Montant, IdUtilisateur, IdContribution) VALUES (%s, %s, %s)", 
+                    (amount, user_id, contribution_id))
+        if local_conn:
+            local_conn.commit()
+        return True
+    except Exception as e:
+        print(f"Erreur award_points: {e}")
+        if local_conn:
+            local_conn.rollback()
+        raise e
+    finally:
+        if local_conn:
+            local_conn.close()
+
+def update_level(user_id, cur=None):
+    local_conn = None
+    if cur is None:
+        local_conn = get_connection()
+        cur = local_conn.cursor()
+    try:
+        cur.execute("""
+            UPDATE Utilisateur 
+            SET Niveau = 1 + (
+                SELECT 
+                    (SELECT COUNT(*) FROM Resume r JOIN Contribution c ON r.Id = c.Id WHERE c.IdUtilisateur = %(uid)s) +
+                    ((SELECT COUNT(*) FROM Evaluation e JOIN Contribution c ON e.Id = c.Id WHERE c.IdUtilisateur = %(uid)s) / 5)
+            )
+            WHERE IdUtilisateur = %(uid)s
+        """, {'uid': user_id})
+        if local_conn:
+            local_conn.commit()
+        return True
+    except Exception as e:
+        print(f"Erreur update_level: {e}")
+        if local_conn:
+            local_conn.rollback()
+        raise e
+    finally:
+        if local_conn:
+            local_conn.close()
+
+def get_user_stats(user_id):
     conn = get_connection()
     cur = conn.cursor()
     try:
         cur.execute("""
-            UPDATE Utilisateur 
-            SET Points = Points + %s,
-                Niveau = ((Points + %s) / 300) + 1
+            SELECT Points as points, Niveau as niveau 
+            FROM Utilisateur 
             WHERE IdUtilisateur = %s
-        """, (amount, amount, user_id))
-        cur.execute("""
-            INSERT INTO Transaction (Montant, IdUtilisateur, IdContribution)
-            VALUES (%s, %s, %s)
-        """, (amount, user_id, contribution_id))
-        conn.commit()
-        return True
+        """, (user_id,))
+        
+        result = cur.fetchone()
+        return dict(result) if result else None
     except Exception as e:
-        print(f"ERREUR AWARD_POINTS: {e}")
-        conn.rollback()
-        return False
+        print(f"Erreur get_user_stats: {e}")
+        return None
     finally:
         conn.close()

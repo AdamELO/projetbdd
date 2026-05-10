@@ -2,7 +2,7 @@ from nicegui import ui, app
 from components.dialogs import open_resumes_dialog
 from components.filters import filter_list_cours, get_filtered_cours, apply_filters, reset_filters
 from components.navbar import navbar
-from components.auth import require_auth
+from components.auth import get_points, require_auth
 from queries.cours import get_all_cours, get_resumes_by_cours, add_cours
 from queries.resume import add_resume
 
@@ -40,9 +40,10 @@ def classes_page():
                 return
             success = add_resume(titre_input.value.strip(), None, cours['code'], id_utilisateur)
             if success:
+                app.storage.user['points'] = get_points() + 300
                 ui.notify(f'Résumé "{titre_input.value}" ajouté !', type='positive')
                 add_dialog.close()
-                ui.navigate.to('/classes')
+                ui.timer(2, lambda: ui.navigate.to('/classes'), once=True)
             else:
                 error_label.set_text('Erreur lors de l\'ajout du résumé')
 

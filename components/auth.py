@@ -1,4 +1,5 @@
 from nicegui import app, ui
+from queries.user import get_user_stats
 
 def is_logged_in() :
     return app.storage.user.get('authenticated', False)
@@ -36,6 +37,17 @@ def logout():
     app.storage.user['title_name'] = None
 
 
+def sync_session():
+    user_id = get_id()
+    if user_id:
+        stats = get_user_stats(user_id)
+        if stats:
+            app.storage.user['points'] = stats['points']
+            app.storage.user['level'] = stats['niveau']
+
+
 def require_auth():
     if not is_logged_in():
         ui.navigate.to('/login')
+    else:
+        sync_session()

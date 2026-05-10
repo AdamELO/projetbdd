@@ -90,7 +90,7 @@ def summary_page(summary_id):
             id_utilisateur = app.storage.user.get('id')
             success = add_evaluation(note_value['value'], commentaire_input.value.strip(), summary_id, id_utilisateur)
             if success:
-                app.storage.user['points'] = get_points() + 100
+                app.storage.user['points'] = get_points() + 50
                 ui.notify('Commentaire ajouté !', type='positive')
                 comment_dialog.close()
                 ui.navigate.to(f'/summary/{summary_id}')

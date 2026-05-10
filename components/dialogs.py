@@ -61,12 +61,11 @@ def open_add_resume_dialog(cours):
                 return
             id_utilisateur = app.storage.user.get('id')
             success = add_resume(titre.value, None, cours['code'], id_utilisateur)
-            print("kqjkdqjhdkqjhd")
             if success:
                 app.storage.user['points'] = get_points() + 500
                 ui.notify(f'Résumé "{titre.value}" ajouté !', type='positive')
                 dialog.close()
-                ui.navigate.to(f'/classes')
+                ui.timer(2, lambda: ui.navigate.to('/classes'), once=True)
             else:
                 error.set_text('Erreur lors de l\'ajout du résumé')
         

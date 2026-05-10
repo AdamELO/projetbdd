@@ -1,5 +1,5 @@
 from db import get_connection
-from queries.user import award_points
+from queries.user import award_points, update_level
 
 def add_resume(titre, description, code_cours, id_utilisateur):
     print("ADD_RESUME APPELÉ")
@@ -20,9 +20,9 @@ def add_resume(titre, description, code_cours, id_utilisateur):
             VALUES (%s, %s, %s, %s)
         """, (id_contribution, titre, description, code_cours))
 
+        award_points(id_utilisateur, 300, id_contribution, cur)
+        update_level(id_utilisateur, cur)
         conn.commit()
-
-        award_points(id_utilisateur, 500, id_contribution)
         return True
     except Exception as e:
         print(f"ERREUR add_resume: {e}")
@@ -83,10 +83,11 @@ def add_evaluation(note, commentaire, id_resume, id_utilisateur):
             SELECT c.IdUtilisateur FROM Contribution c
             JOIN Resume r ON c.Id = r.Id WHERE r.Id = %s
         """, (id_resume,))
-        auteur_resume = cur.fetchone()['idutilisateur']
+
+        award_points(id_utilisateur, 50, id_contribution, cur)
+        update_level(id_utilisateur, cur)
         conn.commit()
 
-        award_points(id_utilisateur, 100, id_contribution)
         return True
     except Exception as e:
         print(f"ERREUR add_evaluation: {e}", flush=True)
