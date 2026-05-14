@@ -84,3 +84,35 @@ def add_evaluation(note, commentaire, id_resume, id_utilisateur):
         return False
     finally:
         conn.close()
+
+def get_best_resume_of_month():
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("""
+        SELECT r.Id as id, r.Titre as titre, r.Code as code_cours,
+               co.Nom as nom_cours, u.Nom as auteur,
+               ROUND(AVG(e.Note), 1) as note,
+               COUNT(DISTINCT e.Id) as nb_commentaires
+        FROM Resume r
+        JOIN Cours co ON r.Code = co.Code
+        JOIN Contribution c ON r.Id = c.Id
+        JOIN Utilisateur u ON c.IdUtilisateur = u.IdUtilisateur
+        JOIN Evaluation e ON r.Id = e.IdResume
+        WHERE DATE_TRUNC('month', c.Date) = DATE_TRUNC('month', CURRENT_DATE)
+        GROUP BY r.Id, r.Titre, r.Code, co.Nom, u.Nom
+        HAVING AVG(e.Note) = (
+            SELECT MAX(avg_note) FROM (
+                SELECT AVG(e2.Note) as avg_note
+                FROM Resume r2
+                JOIN Contribution c2 ON r2.Id = c2.Id
+                JOIN Evaluation e2 ON r2.Id = e2.IdResume
+                WHERE DATE_TRUNC('month', c2.Date) = DATE_TRUNC('month', CURRENT_DATE)
+                GROUP BY r2.Id
+            ) AS sous_requete
+        )
+        ORDER BY RANDOM()
+        LIMIT 1
+    """)
+    result = cur.fetchone()
+    conn.close()
+    return dict(result) if result else None

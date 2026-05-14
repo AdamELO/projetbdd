@@ -1,7 +1,4 @@
--- Extensions
-CREATE EXTENSION IF NOT EXISTS pgcrypto;
-
--- Utilisateur
+--Utilisateur
 CREATE TABLE Utilisateur (
     IdUtilisateur SERIAL PRIMARY KEY,
     Nom VARCHAR(100) NOT NULL UNIQUE,
@@ -16,27 +13,16 @@ CREATE TABLE Utilisateur (
 CREATE TABLE Cours (
     Code VARCHAR(20) PRIMARY KEY,
     Nom VARCHAR(255) NOT NULL,
-    Faculte VARCHAR(255) NOT NULL,
-    Credits INTEGER NOT NULL DEFAULT 0
-);
--- Année académique
-CREATE TABLE AnneeAcademique (
-    PeriodeAcademique VARCHAR(20) PRIMARY KEY
+    Faculte VARCHAR(255) NOT NULL
 );
 
--- Cours par année
-CREATE TABLE CoursParAnnee (
-    Code VARCHAR(20) REFERENCES Cours(Code),
-    PeriodeAcademique VARCHAR(20) REFERENCES AnneeAcademique(PeriodeAcademique),
-    PRIMARY KEY (Code, PeriodeAcademique)
-);
 
 -- Objet cosmétique
 CREATE TABLE ObjetCosmetique (
     Id SERIAL PRIMARY KEY,
     Nom VARCHAR(100) NOT NULL,
     Description TEXT,
-    Prix INTEGER NOT NULL CHECK (Prix >= 0)
+    Prix INTEGER NOT NULL CHECK (Prix > 0)
 );
 
 -- Titre
@@ -74,12 +60,12 @@ CREATE TABLE ObjetUtilisateur (
 CREATE TABLE Contribution (
     Id SERIAL PRIMARY KEY,
     Date DATE NOT NULL DEFAULT CURRENT_DATE,
-    IdUtilisateur INTEGER NOT NULL REFERENCES Utilisateur(IdUtilisateur)
+    IdUtilisateur INTEGER NOT NULL REFERENCES Utilisateur(IdUtilisateur) ON DELETE CASCADE
 );
 
 -- Résumé
 CREATE TABLE Resume (
-    Id INTEGER PRIMARY KEY REFERENCES Contribution(Id),
+    Id INTEGER PRIMARY KEY REFERENCES Contribution(Id) ON DELETE CASCADE,
     Titre VARCHAR(255) NOT NULL,
     Description TEXT,
     Version INTEGER NOT NULL DEFAULT 1 CHECK (Version >= 1),
@@ -89,10 +75,10 @@ CREATE TABLE Resume (
 
 -- Évaluation
 CREATE TABLE Evaluation (
-    Id INTEGER PRIMARY KEY REFERENCES Contribution(Id),
+    Id INTEGER PRIMARY KEY REFERENCES Contribution(Id) ON DELETE CASCADE,
     Note INTEGER CHECK (Note BETWEEN 1 AND 5),
     Commentaire TEXT,
-    IdResume INTEGER NOT NULL REFERENCES Resume(Id)
+    IdResume INTEGER NOT NULL REFERENCES Resume(Id) ON DELETE CASCADE
 );
 
 -- Transaction

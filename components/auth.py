@@ -39,3 +39,6 @@ def logout():
 def require_auth():
     if not is_logged_in():
         ui.navigate.to('/login')
+
+def get_username():
+    return app.storage.user.get('username', 'Utilisateur')

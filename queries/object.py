@@ -316,12 +316,15 @@ def get_lasts_items(user_id=None, n=3):
     conn = get_connection()
     cur = conn.cursor()
     cur.execute("""
-        SELECT obj.Id, obj.Nom as name, obj.Description, obj.Prix as price, EXISTS (SELECT * FROM ObjetUtilisateur obju WHERE obju.IdObjetCosmetique = obj.Id AND obju.IdUtilisateur = %s) as is_bought
+        SELECT obj.Id as id, obj.Nom as name, obj.Description as description, obj.Prix as price,
+               EXISTS (
+                   SELECT 1 FROM ObjetUtilisateur obju 
+                   WHERE obju.IdObjetCosmetique = obj.Id AND obju.IdUtilisateur = %s
+               ) as is_bought
         FROM ObjetCosmetique obj
-        JOIN Cosmetique c ON obj.Id = c.Id
-        ORDER BY obj.Id DESC
+        ORDER BY RANDOM()
         LIMIT %s
     """, (user_id, n))
     results = cur.fetchall()
     conn.close()
-    return results
+    return [dict(row) for row in results]
