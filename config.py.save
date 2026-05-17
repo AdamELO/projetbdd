@@ -1,0 +1,5 @@
+DB_HOST = "localhost"
+DB_NAME = "ta_base"
+DB_USER = "ton_user"
+DB_PASSWORD = "ton_mdp"
+DB_PORT = 5432
