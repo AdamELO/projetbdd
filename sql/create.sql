@@ -13,7 +13,8 @@ CREATE TABLE Utilisateur (
 CREATE TABLE Cours (
     Code VARCHAR(20) PRIMARY KEY,
     Nom VARCHAR(255) NOT NULL,
-    Faculte VARCHAR(255) NOT NULL
+    Faculte VARCHAR(255) NOT NULL,
+    Credits INTEGER NOT NULL CHECK (Credits > 0) 
 );
 
 
