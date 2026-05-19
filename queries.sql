@@ -1,5 +1,5 @@
 -- Les 10 utilisateurs ayant le plus de points
-SELECT IdUtilisateur AS id, Nom AS nom, Points AS points
+SELECT IdUtilisateur AS id, Nom AS nom, Niveau AS niveau, Points AS points
 FROM Utilisateur
 ORDER BY points DESC
 LIMIT 10;

@@ -47,8 +47,11 @@ def most_bought_item():
     cur = conn.cursor()
     cur.execute(_queries["L'objet cosmétique le plus acheté"])
     result = cur.fetchone()
+    cur.close()
     conn.close()
-    return dict(result) if result else None
+    if result is None:
+        return {"id": None, "nom": "Aucun achat", "nb_achats": 0}  # valeur par défaut
+    return dict(result)
 
 def users_overspent():
     conn = get_connection()
