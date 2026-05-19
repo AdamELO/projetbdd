@@ -17,23 +17,25 @@ SELECT r.Code, c.Nom, COUNT(*) AS NbResumes
 FROM Resume r
 JOIN Cours c ON r.Code = c.Code
 GROUP BY r.Code, c.Nom
-ORDER BY NbResumes DESC
-LIMIT 1;
+HAVING COUNT(*) = (
+    SELECT MAX(cnt) FROM (
+        SELECT COUNT(*) AS cnt FROM Resume GROUP BY Code
+    ) AS m
+);
 
 -- 4. Les résumés les mieux notés (note moyenne maximale) pour chaque cours
-SELECT r.Code, r.Titre, AVG(e.Note) AS NoteMoyenne
-FROM Resume r
-JOIN Evaluation e ON r.Id = e.IdResume
-GROUP BY r.Id, r.Code, r.Titre
-HAVING AVG(e.Note) = (
-    SELECT MAX(avg_note) FROM (
-        SELECT AVG(e2.Note) AS avg_note
-        FROM Resume r2
-        JOIN Evaluation e2 ON r2.Id = e2.IdResume
-        WHERE r2.Code = r.Code
-        GROUP BY r2.Id
-    ) AS sous_requete
-);
+WITH notes AS (
+    SELECT r.Id, r.Code, r.Titre,
+           AVG(e.Note) AS NoteMoyenne,
+           RANK() OVER (PARTITION BY r.Code ORDER BY AVG(e.Note) DESC) AS rang
+    FROM Resume r
+    JOIN Evaluation e ON r.Id = e.IdResume
+    GROUP BY r.Id, r.Code, r.Titre
+)
+SELECT Code, Titre, NoteMoyenne
+FROM notes
+WHERE rang = 1
+ORDER BY Code;
 
 -- 5. Les utilisateurs n'ayant jamais publié de résumé
 SELECT u.IdUtilisateur, u.Nom
@@ -54,13 +56,14 @@ LIMIT 1;
 
 -- 7. Les utilisateurs ayant dépensé plus de points qu'ils n'en ont disponibles
 SELECT u.IdUtilisateur, u.Nom, u.Points,
-       COALESCE(SUM(oc.Prix), 0) AS PointsDepenses
+       ABS(SUM(CASE WHEN t.Montant < 0 THEN t.Montant ELSE 0 END)) AS PointsDepenses,
+       SUM(CASE WHEN t.Montant > 0 THEN t.Montant ELSE 0 END) AS PointsGagnes
 FROM Utilisateur u
 JOIN Transaction t ON u.IdUtilisateur = t.IdUtilisateur
-JOIN ObjetCosmetique oc ON t.IdObjetCosmetique = oc.Id
 GROUP BY u.IdUtilisateur, u.Nom, u.Points
-HAVING COALESCE(SUM(oc.Prix), 0) > u.Points;
-
+HAVING ABS(SUM(CASE WHEN t.Montant < 0 THEN t.Montant ELSE 0 END)) 
+     > SUM(CASE WHEN t.Montant > 0 THEN t.Montant ELSE 0 END);
+     
 -- 8. Le nombre moyen de résumés publiés par utilisateur
 SELECT ROUND(AVG(NbResumes), 2) AS MoyenneResumesParUtilisateur
 FROM (

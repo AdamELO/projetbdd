@@ -18,17 +18,7 @@ CREATE TABLE Cours (
     Nom VARCHAR(255) NOT NULL,
     Faculte VARCHAR(255) NOT NULL,
     Credits INTEGER NOT NULL DEFAULT 0
-);
--- Année académique
-CREATE TABLE AnneeAcademique (
-    PeriodeAcademique VARCHAR(20) PRIMARY KEY
-);
-
--- Cours par année
-CREATE TABLE CoursParAnnee (
-    Code VARCHAR(20) REFERENCES Cours(Code),
-    PeriodeAcademique VARCHAR(20) REFERENCES AnneeAcademique(PeriodeAcademique),
-    PRIMARY KEY (Code, PeriodeAcademique)
+    AnneeAcademique VARCHAR(20)
 );
 
 -- Objet cosmétique
@@ -41,32 +31,33 @@ CREATE TABLE ObjetCosmetique (
 
 -- Titre
 CREATE TABLE Titre (
-    Id INTEGER PRIMARY KEY REFERENCES ObjetCosmetique(Id)
+    Id INTEGER PRIMARY KEY REFERENCES ObjetCosmetique(Id) ON DELETE CASCADE
 );
 
 -- Badge
 CREATE TABLE Badge (
-    Id INTEGER PRIMARY KEY REFERENCES ObjetCosmetique(Id),
+    Id INTEGER PRIMARY KEY REFERENCES ObjetCosmetique(Id) ON DELETE CASCADE,
     Image VARCHAR(255)
 );
 
 -- Theme
 CREATE TABLE Theme (
-    Id INTEGER PRIMARY KEY REFERENCES ObjetCosmetique(Id),
+    Id INTEGER PRIMARY KEY REFERENCES ObjetCosmetique(Id) ON DELETE CASCADE,
     Image VARCHAR(255)
 );
 
 -- Cosmetique
 CREATE TABLE Cosmetique (
-    Id INTEGER PRIMARY KEY REFERENCES ObjetCosmetique(Id),
+    Id INTEGER PRIMARY KEY REFERENCES ObjetCosmetique(Id) ON DELETE CASCADE,
     Icone VARCHAR(255)
 );
 
 -- Objet possédé par utilisateur
 CREATE TABLE ObjetUtilisateur (
-    IdObjetCosmetique INTEGER REFERENCES ObjetCosmetique(Id),
-    IdUtilisateur INTEGER REFERENCES Utilisateur(IdUtilisateur),
+    IdObjetCosmetique INTEGER REFERENCES ObjetCosmetique(Id) ON DELETE CASCADE,
+    IdUtilisateur INTEGER REFERENCES Utilisateur(IdUtilisateur) ON DELETE CASCADE,
     EstActif BOOLEAN NOT NULL DEFAULT FALSE,
+    DateAchat DATE NOT NULL DEFAULT CURRENT_DATE,
     PRIMARY KEY (IdObjetCosmetique, IdUtilisateur)
 );
 
@@ -74,12 +65,12 @@ CREATE TABLE ObjetUtilisateur (
 CREATE TABLE Contribution (
     Id SERIAL PRIMARY KEY,
     Date DATE NOT NULL DEFAULT CURRENT_DATE,
-    IdUtilisateur INTEGER NOT NULL REFERENCES Utilisateur(IdUtilisateur)
+    IdUtilisateur INTEGER NOT NULL REFERENCES Utilisateur(IdUtilisateur) ON DELETE CASCADE
 );
 
 -- Résumé
 CREATE TABLE Resume (
-    Id INTEGER PRIMARY KEY REFERENCES Contribution(Id),
+    Id INTEGER PRIMARY KEY REFERENCES Contribution(Id) ON DELETE CASCADE,
     Titre VARCHAR(255) NOT NULL,
     Description TEXT,
     Fichier BYTEA,
@@ -90,10 +81,10 @@ CREATE TABLE Resume (
 
 -- Évaluation
 CREATE TABLE Evaluation (
-    Id INTEGER PRIMARY KEY REFERENCES Contribution(Id),
+    Id INTEGER PRIMARY KEY REFERENCES Contribution(Id) ON DELETE CASCADE,
     Note INTEGER CHECK (Note BETWEEN 1 AND 5),
     Commentaire TEXT,
-    IdResume INTEGER NOT NULL REFERENCES Resume(Id)
+    IdResume INTEGER NOT NULL REFERENCES Resume(Id) ON DELETE CASCADE
 );
 
 -- Transaction
@@ -101,17 +92,9 @@ CREATE TABLE Transaction (
     Id SERIAL PRIMARY KEY,
     Date DATE NOT NULL DEFAULT CURRENT_DATE,
     Montant INTEGER NOT NULL,
-    IdObjetCosmetique INTEGER REFERENCES ObjetCosmetique(Id),
-    IdUtilisateur INTEGER NOT NULL REFERENCES Utilisateur(IdUtilisateur),
-    IdContribution INTEGER REFERENCES Contribution(Id)
-);
-
--- Leaderboard
-CREATE TABLE Leaderboard (
-    Periode VARCHAR(20),
-    IdUtilisateur INTEGER REFERENCES Utilisateur(IdUtilisateur),
-    PointsTotal INTEGER NOT NULL DEFAULT 0,
-    PRIMARY KEY (Periode, IdUtilisateur)
+    IdObjetCosmetique INTEGER REFERENCES ObjetCosmetique(Id) ON DELETE SET NULL,
+    IdUtilisateur INTEGER NOT NULL REFERENCES Utilisateur(IdUtilisateur) ON DELETE CASCADE,
+    IdContribution INTEGER REFERENCES Contribution(Id) ON DELETE SET NULL
 );
 
 -- Index utiles
@@ -119,3 +102,4 @@ CREATE INDEX idx_resume_cours ON Resume(Code);
 CREATE INDEX idx_contribution_user ON Contribution(IdUtilisateur);
 CREATE INDEX idx_evaluation_resume ON Evaluation(IdResume);
 CREATE INDEX idx_transaction_user ON Transaction(IdUtilisateur);
+CREATE INDEX idx_objet_utilisateur ON ObjetUtilisateur(IdUtilisateur);
