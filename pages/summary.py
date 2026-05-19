@@ -4,7 +4,20 @@ from components.auth import get_points, require_auth
 from components.stars import stars_rating
 from components.comments import comments
 from queries.cours import get_resume_by_id, get_evaluations_by_resume
-from queries.resume import update_resume, delete_resume, add_evaluation
+from queries.resume import update_resume, delete_resume, add_evaluation, get_fichier_resume, save_fichier_resume
+import io
+
+
+def generer_pdf_blanc(titre):
+    from reportlab.pdfgen import canvas
+    from reportlab.lib.pagesizes import A4
+    buffer = io.BytesIO()
+    c = canvas.Canvas(buffer, pagesize=A4)
+    c.setFont("Helvetica", 16)
+    c.drawCentredString(297, 750, titre)
+    c.save()
+    return buffer.getvalue()
+
 
 @ui.page('/summary/{summary_id}')
 def summary_page(summary_id):
@@ -20,6 +33,8 @@ def summary_page(summary_id):
     current_user = app.storage.user.get('username', '')
     is_author = current_user == summary['auteur']
 
+    fichier_bytes = {'value': None}
+
     # --- Dialog modification ---
     with ui.dialog() as edit_dialog, ui.card().classes('w-full max-w-lg'):
         ui.label('Modifier le résumé').classes('text-xl font-bold')
@@ -30,11 +45,18 @@ def summary_page(summary_id):
             .props('accept=".pdf,.docx"').classes('w-full')
         error_edit = ui.label('').classes('text-red-500')
 
+        def on_upload(e):
+            fichier_bytes['value'] = e.content.read()
+
+        upload_edit.on('upload', on_upload)
+
         def submit_edit():
             if not titre_edit.value.strip():
                 error_edit.set_text('Le titre est obligatoire')
                 return
             success = update_resume(summary_id, titre_edit.value.strip(), None)
+            if success and fichier_bytes['value']:
+                save_fichier_resume(summary_id, fichier_bytes['value'])
             if success:
                 ui.notify('Résumé modifié !', type='positive')
                 edit_dialog.close()
@@ -68,7 +90,7 @@ def summary_page(summary_id):
     with ui.dialog() as comment_dialog, ui.card().classes('w-full max-w-lg'):
         ui.label('Ajouter un commentaire').classes('text-xl font-bold')
         ui.separator()
-        
+
         note_value = {'value': 5}
         ui.label('Note :').classes('text-sm font-bold mt-2')
         with ui.row().classes('gap-1'):
@@ -101,6 +123,15 @@ def summary_page(summary_id):
             ui.button('Annuler', on_click=comment_dialog.close).props('flat')
             ui.button('Publier', on_click=submit_comment).props('color=primary')
 
+    # --- Fonction téléchargement ---
+    def telecharger():
+        data = get_fichier_resume(summary_id)
+        if data and data['fichier']:
+            pdf_bytes = bytes(data['fichier'])
+        else:
+            pdf_bytes = generer_pdf_blanc(summary['titre'])
+        ui.download(pdf_bytes, f"resume_{summary_id}.pdf")
+
     # --- Page ---
     with ui.column().classes('w-full items-center p-4 gap-4'):
         with ui.card().classes('w-full max-w-4xl card-theme'):
@@ -125,8 +156,7 @@ def summary_page(summary_id):
             ui.separator()
 
             with ui.row().classes('w-full justify-center gap-2 p-2'):
-                ui.button('Télécharger le résumé', icon='download',
-                          on_click=lambda: ui.notify('résumé.pdf', position='top', type='positive')) \
+                ui.button('Télécharger le résumé', icon='download', on_click=telecharger) \
                     .classes('bg-gray-800').props('flat color=white')
                 ui.button('Ajouter un commentaire', icon='comment',
                           on_click=comment_dialog.open).props('flat color=primary')

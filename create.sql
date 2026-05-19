@@ -82,6 +82,7 @@ CREATE TABLE Resume (
     Id INTEGER PRIMARY KEY REFERENCES Contribution(Id),
     Titre VARCHAR(255) NOT NULL,
     Description TEXT,
+    Fichier BYTEA,
     Version INTEGER NOT NULL DEFAULT 1 CHECK (Version >= 1),
     Visibilite VARCHAR(20) NOT NULL DEFAULT 'public' CHECK (Visibilite IN ('public', 'prive')),
     Code VARCHAR(20) NOT NULL REFERENCES Cours(Code)

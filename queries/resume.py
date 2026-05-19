@@ -130,3 +130,31 @@ def get_random_top_resume():
         return None
     finally:
         conn.close()
+
+def save_fichier_resume(resume_id, fichier_bytes):
+    conn = get_connection()
+    cur = conn.cursor()
+    try:
+        cur.execute("UPDATE Resume SET Fichier = %s WHERE Id = %s", 
+                    (fichier_bytes, resume_id))
+        conn.commit()
+        return True
+    except Exception as e:
+        print(f"Erreur save_fichier_resume: {e}")
+        conn.rollback()
+        return False
+    finally:
+        conn.close()
+
+def get_fichier_resume(resume_id):
+    conn = get_connection()
+    cur = conn.cursor()
+    try:
+        cur.execute("SELECT Fichier, Titre FROM Resume WHERE Id = %s", (resume_id,))
+        row = cur.fetchone()
+        return dict(row) if row else None
+    except Exception as e:
+        print(f"Erreur get_fichier_resume: {e}")
+        return None
+    finally:
+        conn.close()
