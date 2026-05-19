@@ -97,9 +97,12 @@ CREATE TABLE Transaction (
     IdContribution INTEGER REFERENCES Contribution(Id) ON DELETE SET NULL
 );
 
--- Index utiles
+
 CREATE INDEX idx_resume_cours ON Resume(Code);
 CREATE INDEX idx_contribution_user ON Contribution(IdUtilisateur);
 CREATE INDEX idx_evaluation_resume ON Evaluation(IdResume);
 CREATE INDEX idx_transaction_user ON Transaction(IdUtilisateur);
 CREATE INDEX idx_objet_utilisateur ON ObjetUtilisateur(IdUtilisateur);
+CREATE INDEX idx_utilisateur_points ON Utilisateur(Points DESC);
+CREATE INDEX idx_transaction_objet ON Transaction(IdObjetCosmetique);
+CREATE INDEX idx_contribution_user_resume ON Contribution(IdUtilisateur, Id);
