@@ -95,3 +95,38 @@ def add_evaluation(note, commentaire, id_resume, id_utilisateur):
         return False
     finally:
         conn.close()
+
+def get_random_top_resume():
+    conn = get_connection()
+    cur = conn.cursor()
+    try:
+        cur.execute("""
+            WITH notes AS (
+                SELECT r.Id, r.Titre, r.Description,
+                       c2.Nom AS cours_nom, c2.Code AS cours_code,
+                       u.Nom AS auteur,
+                       ROUND(AVG(e.Note)::numeric, 2) AS note_moyenne,
+                       RANK() OVER (
+                           PARTITION BY r.Code
+                           ORDER BY AVG(e.Note) DESC
+                       ) AS rang
+                FROM Resume r
+                JOIN Contribution c ON r.Id = c.Id
+                JOIN Utilisateur u ON c.IdUtilisateur = u.IdUtilisateur
+                JOIN Cours c2 ON r.Code = c2.Code
+                JOIN Evaluation e ON e.IdResume = r.Id
+                GROUP BY r.Id, r.Titre, r.Description, c2.Nom, c2.Code, u.Nom
+            )
+            SELECT Id, Titre, Description, cours_nom, cours_code, auteur, note_moyenne
+            FROM notes
+            WHERE rang = 1
+            ORDER BY RANDOM()
+            LIMIT 1
+        """)
+        row = cur.fetchone()
+        return dict(row) if row else None
+    except Exception as e:
+        print(f"Erreur get_random_top_resume: {e}")
+        return None
+    finally:
+        conn.close()
