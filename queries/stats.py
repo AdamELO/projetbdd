@@ -1,4 +1,4 @@
-from db import get_connection, get_named_queries
+from database.db import get_connection, get_named_queries
 
 _queries = get_named_queries()
 
