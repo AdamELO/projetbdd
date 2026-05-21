@@ -279,6 +279,19 @@ try:
     conn.commit()
     print("Base de données initialisée avec succès !")
 
+    # ── 9. LEADERBOARD ────────────────────────────────────────────────────────────
+    print("Initialisation du leaderboard...")
+    cur.execute("""
+        INSERT INTO Leaderboard (IdUtilisateur, PointsTotaux)
+        SELECT u.IdUtilisateur,
+               COALESCE(SUM(CASE WHEN t.Montant > 0 THEN t.Montant ELSE 0 END), 0)
+        FROM Utilisateur u
+        LEFT JOIN Transaction t ON u.IdUtilisateur = t.IdUtilisateur
+        GROUP BY u.IdUtilisateur
+        ON CONFLICT (IdUtilisateur) DO UPDATE
+            SET PointsTotaux = EXCLUDED.PointsTotaux
+    """)
+
 except Exception as e:
     conn.rollback()
     print(f" Erreur durant l'initialisation : {e}")

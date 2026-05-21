@@ -46,8 +46,16 @@ def award_points(user_id, amount, contribution_id=None, cur=None):
         cur = local_conn.cursor()
     try:
         cur.execute("UPDATE Utilisateur SET Points = Points + %s WHERE IdUtilisateur = %s", (amount, user_id))
-        cur.execute("INSERT INTO Transaction (Montant, IdUtilisateur, IdContribution) VALUES (%s, %s, %s)", 
+        cur.execute("INSERT INTO Transaction (Montant, IdUtilisateur, IdContribution) VALUES (%s, %s, %s)",
                     (amount, user_id, contribution_id))
+        # Mettre à jour le leaderboard uniquement si c'est un gain
+        if amount > 0:
+            cur.execute("""
+    INSERT INTO Leaderboard (IdUtilisateur, pointstotal)
+    VALUES (%s, %s)
+    ON CONFLICT (IdUtilisateur) DO UPDATE
+        SET pointstotal = Leaderboard.pointstotal + %s
+""", (user_id, amount, amount))
         if local_conn:
             local_conn.commit()
         return True
@@ -58,6 +66,7 @@ def award_points(user_id, amount, contribution_id=None, cur=None):
         raise e
     finally:
         if local_conn:
+            cur.close()
             local_conn.close()
 
 def update_level(user_id, cur=None):

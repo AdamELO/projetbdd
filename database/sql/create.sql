@@ -97,6 +97,10 @@ CREATE TABLE Transaction (
     IdContribution INTEGER REFERENCES Contribution(Id) ON DELETE SET NULL
 );
 
+CREATE TABLE Leaderboard (
+    IdUtilisateur INTEGER PRIMARY KEY REFERENCES Utilisateur(IdUtilisateur) ON DELETE CASCADE,
+    PointsTotaux INTEGER NOT NULL DEFAULT 0
+);
 
 CREATE INDEX idx_resume_cours ON Resume(Code);
 CREATE INDEX idx_contribution_user ON Contribution(IdUtilisateur);

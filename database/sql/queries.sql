@@ -1,7 +1,8 @@
 -- Les 10 utilisateurs ayant le plus de points
-SELECT IdUtilisateur AS id, Nom AS nom, Niveau AS niveau, Points AS points
-FROM Utilisateur
-ORDER BY points DESC
+SELECT u.IdUtilisateur AS id, u.Nom AS nom, u.Niveau AS niveau, l.pointstotal AS points
+FROM Leaderboard l
+JOIN Utilisateur u ON l.IdUtilisateur = u.IdUtilisateur
+ORDER BY l.pointstotal DESC
 LIMIT 10;
 
 -- Les utilisateurs ayant publié des résumés dans au moins 3 cours différents
