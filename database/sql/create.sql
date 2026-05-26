@@ -52,15 +52,13 @@ CREATE TABLE Cosmetique (
     Icone VARCHAR(255)
 );
 
--- Objet possédé par utilisateur
+-- Table ObjetUtilisateur 
 CREATE TABLE ObjetUtilisateur (
     IdObjetCosmetique INTEGER REFERENCES ObjetCosmetique(Id) ON DELETE CASCADE,
     IdUtilisateur INTEGER REFERENCES Utilisateur(IdUtilisateur) ON DELETE CASCADE,
     EstActif BOOLEAN NOT NULL DEFAULT FALSE,
-    DateAchat DATE NOT NULL DEFAULT CURRENT_DATE,
     PRIMARY KEY (IdObjetCosmetique, IdUtilisateur)
 );
-
 -- Contribution
 CREATE TABLE Contribution (
     Id SERIAL PRIMARY KEY,
