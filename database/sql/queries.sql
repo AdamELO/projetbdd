@@ -55,14 +55,14 @@ ORDER BY nb_achats DESC
 LIMIT 1;
 
 -- Les utilisateurs ayant dépensé plus de points qu'ils n'en ont disponibles
-SELECT u.IdUtilisateur AS id, u.Nom AS nom, u.Points AS points,
-       ABS(SUM(CASE WHEN t.Montant < 0 THEN t.Montant ELSE 0 END)) AS points_depenses,
-       SUM(CASE WHEN t.Montant > 0 THEN t.Montant ELSE 0 END) AS points_gagnes
+SELECT u.IdUtilisateur AS id, 
+       u.Nom AS nom, 
+       u.Points AS points_disponibles,
+       ABS(SUM(CASE WHEN t.Montant < 0 THEN t.Montant ELSE 0 END)) AS points_depenses
 FROM Utilisateur u
 JOIN Transaction t ON u.IdUtilisateur = t.IdUtilisateur
 GROUP BY u.IdUtilisateur, u.Nom, u.Points
-HAVING ABS(SUM(CASE WHEN t.Montant < 0 THEN t.Montant ELSE 0 END)) 
-     > SUM(CASE WHEN t.Montant > 0 THEN t.Montant ELSE 0 END);
+HAVING ABS(SUM(CASE WHEN t.Montant < 0 THEN t.Montant ELSE 0 END)) > u.Points;
 
 -- Le nombre moyen de résumés publiés par utilisateur
 SELECT ROUND(AVG(nb_resumes), 2) AS moyenne
