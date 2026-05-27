@@ -8,7 +8,7 @@
 ## Installation des dépendances
 
 ```bash
-pip install --break-system-packages nicegui psycopg2-binary bcrypt reportlab
+pip install nicegui psycopg2-binary bcrypt reportlab
 ```
 
 ## Configuration
@@ -30,19 +30,19 @@ Deux étapes à effectuer une seule fois, dans cet ordre.
 **1. Créer les tables :**
 
 ```bash
-psql -U <utilisateur> -d <nom_base> -f create.sql
+psql -U <utilisateur> -d <nom_base> -f database/sql/create.sql
 ```
 
 **2. Insérer les données initiales :**
 
 ```bash
-python3 init_db.py
+python -m database.init_db
 ```
 
 ## Lancer l'application
 
 ```bash
-python3 main.py
+python main.py
 ```
 
 L'application est ensuite accessible sur [http://localhost:8080](http://localhost:8080).
@@ -51,16 +51,23 @@ L'application est ensuite accessible sur [http://localhost:8080](http://localhos
 
 ```
 .
-├── main.py               # Point d'entrée
-├── config.py             # Configuration de la base (à créer)
-├── db.py                 # Connexion PostgreSQL
-├── create.sql            # Schéma de la base (DDL)
-├── init_db.py            # Script d'initialisation des données
-├── queries.sql           # Requêtes nommées
-├── components/           # Composants NiceGUI réutilisables
-├── pages/                # Pages de l'application
-├── queries/              # Fonctions d'accès à la base
-└── data/                 # Données initiales (CSV, XML, JSON)
+├── main.py                  # Point d'entrée
+├── config.py                # Configuration de la base (à créer)
+├── database/
+│   ├── db.py                # Connexion PostgreSQL
+│   ├── init_db.py           # Script d'initialisation des données
+│   └── sql/
+│       ├── create.sql       # Schéma de la base (DDL)
+│       └── queries.sql      # Requêtes nommées
+├── components/              # Composants NiceGUI réutilisables
+├── pages/                   # Pages de l'application
+├── queries/                 # Fonctions d'accès à la base
+│   ├── cours.py
+│   ├── object.py
+│   ├── resume.py
+│   ├── stats.py
+│   └── user.py
+└── data/                    # Données initiales (CSV, XML, JSON)
 ```
 
 ## Comptes de test

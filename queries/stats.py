@@ -74,10 +74,10 @@ def top_10_by_level():
     cur = conn.cursor()
     cur.execute("""
     SELECT u.IdUtilisateur AS id, u.Nom AS nom, u.Niveau AS niveau,
-           l.pointstotal AS points
+           l.pointstotaux AS points
     FROM Leaderboard l
     JOIN Utilisateur u ON l.IdUtilisateur = u.IdUtilisateur
-    ORDER BY u.Niveau DESC, l.pointstotal DESC
+    ORDER BY u.Niveau DESC, l.pointstotaux DESC
     LIMIT 10
 """)
     results = cur.fetchall()
