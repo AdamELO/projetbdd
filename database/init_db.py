@@ -171,6 +171,15 @@ try:
                 continue
 
             cur.execute("""
+                SELECT r.Id FROM Resume r
+                JOIN Contribution c ON r.Id = c.Id
+                WHERE r.Titre = %s AND r.Code = %s AND c.IdUtilisateur = %s
+                LIMIT 1
+            """, (titre, cours_code, uid))
+            if cur.fetchone() is not None:
+                continue
+
+            cur.execute("""
                 INSERT INTO Contribution (Date, IdUtilisateur)
                 VALUES (%s, %s)
                 RETURNING Id
@@ -213,6 +222,15 @@ try:
             print(f"  Résumé non trouvé pour évaluation : '{titre_resume}' ({cours_code})")
             continue
         id_resume = row[0]
+
+        cur.execute("""
+            SELECT e.Id FROM Evaluation e
+            JOIN Contribution c ON e.Id = c.Id
+            WHERE e.IdResume = %s AND c.IdUtilisateur = %s AND e.Commentaire = %s
+            LIMIT 1
+        """, (id_resume, uid_auteur, commentaire))
+        if cur.fetchone() is not None:
+            continue
 
         cur.execute("""
             INSERT INTO Contribution (Date, IdUtilisateur)

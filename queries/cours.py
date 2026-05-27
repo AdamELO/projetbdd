@@ -64,10 +64,14 @@ def get_evaluations_by_resume(resume_id):
     FROM Evaluation e
     JOIN Contribution c ON e.Id = c.Id
     JOIN Utilisateur u ON c.IdUtilisateur = u.IdUtilisateur
-    LEFT JOIN ObjetUtilisateur obju ON u.IdUtilisateur = obju.IdUtilisateur
-        AND obju.EstActif = TRUE
-    LEFT JOIN Titre t ON obju.IdObjetCosmetique = t.Id
-    LEFT JOIN ObjetCosmetique obj ON t.Id = obj.Id
+    LEFT JOIN (
+        SELECT obju.IdUtilisateur, MIN(obju.IdObjetCosmetique) AS IdObjetCosmetique
+        FROM ObjetUtilisateur obju
+        JOIN Titre t ON obju.IdObjetCosmetique = t.Id
+        WHERE obju.EstActif = TRUE
+        GROUP BY obju.IdUtilisateur
+    ) titre_actif ON u.IdUtilisateur = titre_actif.IdUtilisateur
+    LEFT JOIN ObjetCosmetique obj ON titre_actif.IdObjetCosmetique = obj.Id
     WHERE e.IdResume = %s
     ORDER BY e.Id DESC
     """, (resume_id,))
