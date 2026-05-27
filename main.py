@@ -1,7 +1,4 @@
 from nicegui import ui, app
-
-app.add_static_files('/images', 'images')
-
 #importation des pages
 import pages.home
 import pages.login

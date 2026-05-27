@@ -1,4 +1,4 @@
-from db import get_connection
+from database.db import get_connection
 
 #tous les titres de l'utilisateur
 def user_titles(user_id):

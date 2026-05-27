@@ -1,4 +1,4 @@
-from db import get_connection, get_named_queries
+from database.db import get_connection, get_named_queries
 
 _queries = get_named_queries()
 
@@ -73,11 +73,14 @@ def top_10_by_level():
     conn = get_connection()
     cur = conn.cursor()
     cur.execute("""
-        SELECT IdUtilisateur as id, Nom as nom, Niveau as niveau, Points as points
-        FROM Utilisateur
-        ORDER BY Niveau DESC, Points DESC
-        LIMIT 10
-    """)
+    SELECT u.IdUtilisateur AS id, u.Nom AS nom, u.Niveau AS niveau,
+           l.pointstotal AS points
+    FROM Leaderboard l
+    JOIN Utilisateur u ON l.IdUtilisateur = u.IdUtilisateur
+    ORDER BY u.Niveau DESC, l.pointstotal DESC
+    LIMIT 10
+""")
     results = cur.fetchall()
+    cur.close()
     conn.close()
     return [dict(r) for r in results]

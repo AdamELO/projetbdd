@@ -1,4 +1,4 @@
-from db import get_connection
+from database.db import get_connection
 
 def get_all_cours():
     conn = get_connection()
@@ -59,17 +59,21 @@ def get_evaluations_by_resume(resume_id):
     cur = conn.cursor()
     cur.execute("""
     SELECT u.Nom as name,
-           e.Note as rating, e.Commentaire as comment
+           e.Note as rating, e.Commentaire as comment,
+           obj.Nom as titre
     FROM Evaluation e
     JOIN Contribution c ON e.Id = c.Id
     JOIN Utilisateur u ON c.IdUtilisateur = u.IdUtilisateur
+    LEFT JOIN ObjetUtilisateur obju ON u.IdUtilisateur = obju.IdUtilisateur
+        AND obju.EstActif = TRUE
+    LEFT JOIN Titre t ON obju.IdObjetCosmetique = t.Id
+    LEFT JOIN ObjetCosmetique obj ON t.Id = obj.Id
     WHERE e.IdResume = %s
     ORDER BY e.Id DESC
     """, (resume_id,))
     results = cur.fetchall()
     conn.close()
     return [dict(row) for row in results]
-
 
 def add_cours(code, nom, faculte, credits):
     conn = get_connection()
