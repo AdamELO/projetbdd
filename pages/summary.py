@@ -8,13 +8,13 @@ from queries.resume import update_resume, delete_resume, add_evaluation, get_fic
 import io
 
 
-def generer_pdf_blanc(titre):
+def generate_blank_pdf(title):
     from reportlab.pdfgen import canvas
     from reportlab.lib.pagesizes import A4
     buffer = io.BytesIO()
     c = canvas.Canvas(buffer, pagesize=A4)
     c.setFont("Helvetica", 16)
-    c.drawCentredString(297, 750, titre)
+    c.drawCentredString(297, 750, title)
     c.save()
     return buffer.getvalue()
 
@@ -124,12 +124,12 @@ def summary_page(summary_id):
             ui.button('Publier', on_click=submit_comment).props('color=primary')
 
     # --- Fonction téléchargement ---
-    def telecharger():
+    def download():
         data = get_fichier_resume(summary_id)
         if data and data['fichier']:
             pdf_bytes = bytes(data['fichier'])
         else:
-            pdf_bytes = generer_pdf_blanc(summary['titre'])
+            pdf_bytes = generate_blank_pdf(summary['titre'])
         ui.download(pdf_bytes, f"resume_{summary_id}.pdf")
 
     # --- Page ---
@@ -156,7 +156,7 @@ def summary_page(summary_id):
             ui.separator()
 
             with ui.row().classes('w-full justify-center gap-2 p-2'):
-                ui.button('Télécharger le résumé', icon='download', on_click=telecharger) \
+                ui.button('Télécharger le résumé', icon='download', on_click=download) \
                     .classes('bg-gray-800').props('flat color=white')
                 ui.button('Ajouter un commentaire', icon='comment',
                           on_click=comment_dialog.open).props('flat color=primary')

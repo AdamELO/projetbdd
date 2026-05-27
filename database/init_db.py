@@ -19,7 +19,7 @@ def normaliser(texte):
     return texte
 
 try:
-    # ── 1. COURS ──────────────────────────────────────────────────────────────
+    # COURS
     print("Insertion des cours...")
     with open("data/cours.csv", encoding="utf-8") as f:
         reader = csv.DictReader(f)
@@ -31,7 +31,7 @@ try:
                 ON CONFLICT DO NOTHING
             """, (row["code_cours"], row["nom"], row["faculte"], int(row["credits"]), annee))
 
-    # ── 2. OBJETS COSMÉTIQUES ─────────────────────────────────────────────────
+    # OBJETS COSMÉTIQUES 
     print("Insertion des objets cosmétiques...")
     tree = ET.parse("data/recompenses.xml")
     root = tree.getroot()
@@ -73,7 +73,6 @@ try:
                 ON CONFLICT DO NOTHING
             """, (obj_id, icone.text if icone is not None else None))
 
-    # Resynchroniser la séquence ObjetCosmetique après inserts à Id fixe
     cur.execute("""
         SELECT setval(
             pg_get_serial_sequence('ObjetCosmetique', 'id'),
