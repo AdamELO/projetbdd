@@ -52,15 +52,13 @@ CREATE TABLE Cosmetique (
     Icone VARCHAR(255)
 );
 
--- Objet possédé par utilisateur
+-- Table ObjetUtilisateur 
 CREATE TABLE ObjetUtilisateur (
     IdObjetCosmetique INTEGER REFERENCES ObjetCosmetique(Id) ON DELETE CASCADE,
     IdUtilisateur INTEGER REFERENCES Utilisateur(IdUtilisateur) ON DELETE CASCADE,
     EstActif BOOLEAN NOT NULL DEFAULT FALSE,
-    DateAchat DATE NOT NULL DEFAULT CURRENT_DATE,
     PRIMARY KEY (IdObjetCosmetique, IdUtilisateur)
 );
-
 -- Contribution
 CREATE TABLE Contribution (
     Id SERIAL PRIMARY KEY,
@@ -97,6 +95,10 @@ CREATE TABLE Transaction (
     IdContribution INTEGER REFERENCES Contribution(Id) ON DELETE SET NULL
 );
 
+CREATE TABLE Leaderboard (
+    IdUtilisateur INTEGER PRIMARY KEY REFERENCES Utilisateur(IdUtilisateur) ON DELETE CASCADE,
+    PointsTotaux INTEGER NOT NULL DEFAULT 0
+);
 
 CREATE INDEX idx_resume_cours ON Resume(Code);
 CREATE INDEX idx_contribution_user ON Contribution(IdUtilisateur);

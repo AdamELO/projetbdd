@@ -17,7 +17,7 @@ def get_named_queries():
     current_name = None
     current_sql = []
     
-    path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "queries.sql")
+    path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "sql", "queries.sql")
     print("=== CHARGEMENT QUERIES ===")
     print("Chemin :", path)
     print("Existe :", os.path.exists(path))
