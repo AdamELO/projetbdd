@@ -1,16 +1,13 @@
 from nicegui import ui
 from components.stars import stars_rating
 
-def comments(comments, text_comm="Commentaires"):
+def comments(comments, text_comm = "Commentaires"):
     if comments:
         ui.label(f'{text_comm}').classes('text-md font-bold px-4 pt-2')
         for comment in comments:
             with ui.card().classes('w-full mx-4 my-1 bg-gray-50 card-theme'):
                 with ui.row().classes('w-full items-center justify-between'):
-                    with ui.column().classes('gap-0'):
-                        ui.label(comment["name"]).classes('font-bold text-sm capitalize')
-                        if comment.get("titre"):
-                            ui.label(comment["titre"]).classes('text-xs text-yellow-600 italic')
+                    ui.label(f'{comment["name"]}').classes('font-bold text-sm capitalize')
                     stars_rating(comment['rating'], size='text-sm')
                 ui.label(comment['comment']).classes('text-sm text-gray-700 text-theme')
     else:

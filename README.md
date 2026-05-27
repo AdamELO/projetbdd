@@ -1,72 +1,34 @@
-# Projet Base de Données — Plateforme de partage de résumés de cours
+# Projet bdd
 
 ## Prérequis
 
 - Python 3.x
-- PostgreSQL (version 13+)
+- PostgreSQL
 
-## Installation des dépendances
-
+## Installation
 ```bash
-pip install --break-system-packages nicegui psycopg2-binary bcrypt reportlab
+python3 -m pip install --break-system-packages nicegui psycopg2-binary bcrypt
 ```
 
-## Configuration
-
-Créer un fichier `config.py` à la racine du projet avec les informations de connexion à ta base PostgreSQL :
+Ensuite, créer un fichier `config.py` à la racine du projet avec les informations de connexion de la bdd PostgreSQL :
 
 ```python
 DB_HOST = "localhost"
-DB_NAME = ""       # nom de ta base
-DB_USER = ""       # ton utilisateur PostgreSQL
-DB_PASSWORD = ""   # ton mot de passe
-DB_PORT = 5432     # port par défaut
+DB_NAME = ""
+DB_USER = ""
+DB_PASSWORD = ""
+DB_PORT = 5432  # port PostgreSQL par défaut
 ```
 
-## Initialisation de la base de données
-
-Deux étapes à effectuer une seule fois, dans cet ordre.
-
-**1. Créer les tables :**
-
-```bash
-psql -U <utilisateur> -d <nom_base> -f create.sql
-```
-
-**2. Insérer les données initiales :**
-
-```bash
-python3 init_db.py
-```
-
-## Lancer l'application
+## Lancer le script python
 
 ```bash
 python3 main.py
 ```
 
-L'application est ensuite accessible sur [http://localhost:8080](http://localhost:8080).
-
-## Structure du projet
-
-```
-.
-├── main.py               # Point d'entrée
-├── config.py             # Configuration de la base (à créer)
-├── db.py                 # Connexion PostgreSQL
-├── create.sql            # Schéma de la base (DDL)
-├── init_db.py            # Script d'initialisation des données
-├── queries.sql           # Requêtes nommées
-├── components/           # Composants NiceGUI réutilisables
-├── pages/                # Pages de l'application
-├── queries/              # Fonctions d'accès à la base
-└── data/                 # Données initiales (CSV, XML, JSON)
-```
-
-## Comptes de test
-
-Tous les utilisateurs insérés par `init_db.py` ont le mot de passe par défaut :
-
-```
-password123
+### si pas encore de db:
+ajouter dossier .nicegui et ajouter fichier storage-user-cbdf037b-622d-4334-ba07-a6edd2eef574.json 
+dans le fichier mettre
+```JSON
+{"authenticated":true,"username":"test","id":11,"email":"test@test.com","level":1,"points":0,"theme_name":"noël","theme_image":"snow.gif","title_name":null}
 ```

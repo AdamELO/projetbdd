@@ -1,4 +1,4 @@
-from database.db import get_connection
+from db import get_connection
 from queries.user import award_points, update_level
 
 def add_resume(titre, description, code_cours, id_utilisateur):

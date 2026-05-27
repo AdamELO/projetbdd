@@ -115,18 +115,8 @@ try:
         )
     """)
 
-        # ── 4. RÉSUMÉS ────────────────────────────────────────────────────────────────
+    # ── 4. RÉSUMÉS ────────────────────────────────────────────────────────────
     print("Insertion des résumés...")
-
-    # Construire un index titre → code_cours depuis le JSON
-    with open("data/commentaires.json", encoding="utf-8") as f:
-        data_json = json.load(f)
-
-    titre_to_cours = {}
-    for eval_ in data_json["evaluations"]:
-        titre = eval_["resume"]["titre"]
-        cours = eval_["resume"]["cours"]
-        titre_to_cours[titre] = cours
 
     for utilisateur in root_u.findall("utilisateur"):
         uid = int(utilisateur.get("id"))
@@ -139,37 +129,25 @@ try:
             titre_el  = resume.find("titre")
             date_el   = resume.find("datePublication")
 
-            cours_code = cours_el.text.strip() if cours_el is not None and cours_el.text and cours_el.text.strip() else None
+            cours_code = cours_el.text.strip() if cours_el is not None and cours_el.text else None
             titre      = titre_el.text          if titre_el  is not None and titre_el.text  else None
             date_pub   = date_el.text           if date_el   is not None and date_el.text   else None
 
-            if not titre or not date_pub:
+            if not cours_code or not titre or not date_pub:
                 print(f"  Résumé ignoré (données manquantes) : uid={uid}, titre={titre}")
                 continue
 
-            # Toujours vérifier via le JSON d'abord si le titre y est référencé
-            bon_code_json = titre_to_cours.get(titre)
+            # Créer le cours à la volée si inconnu
+            cur.execute("SELECT Code FROM Cours WHERE Code = %s", (cours_code,))
+            if cur.fetchone() is None:
+                print(f"  Cours inconnu créé automatiquement : {cours_code}")
+                cur.execute("""
+                    INSERT INTO Cours (Code, Nom, Faculte)
+                    VALUES (%s, %s, %s)
+                    ON CONFLICT DO NOTHING
+                """, (cours_code, cours_code, "Inconnu"))
 
-            if bon_code_json:
-                # Le JSON fait autorité sur le code cours
-                cur.execute("SELECT Code FROM Cours WHERE Code = %s", (bon_code_json,))
-                if cur.fetchone() is not None:
-                    if cours_code != bon_code_json:
-                        print(f"  Code corrigé : '{cours_code}' → '{bon_code_json}' (via titre '{titre}')")
-                    cours_code = bon_code_json
-                else:
-                    print(f"  Résumé ignoré — code JSON introuvable en DB : {bon_code_json} / '{titre}'")
-                    continue
-            elif cours_code:
-                # Pas dans le JSON, vérifier que le code XML existe
-                cur.execute("SELECT Code FROM Cours WHERE Code = %s", (cours_code,))
-                if cur.fetchone() is None:
-                    print(f"  Résumé ignoré — code inconnu et titre absent du JSON : {cours_code} / '{titre}'")
-                    continue
-            else:
-                print(f"  Résumé ignoré — code vide et titre absent du JSON : titre='{titre}'")
-                continue
-
+            # Utiliser RETURNING pour éviter le compteur manuel
             cur.execute("""
                 INSERT INTO Contribution (Date, IdUtilisateur)
                 VALUES (%s, %s)
@@ -182,7 +160,6 @@ try:
                 VALUES (%s, %s, %s, %s, %s, %s)
                 ON CONFLICT DO NOTHING
             """, (contribution_id, titre, "", 1, "public", cours_code))
-
 
     # ── 5. ÉVALUATIONS ────────────────────────────────────────────────────────
     print("Insertion des évaluations...")
@@ -301,19 +278,6 @@ try:
 
     conn.commit()
     print("Base de données initialisée avec succès !")
-
-    # ── 9. LEADERBOARD ────────────────────────────────────────────────────────────
-    print("Initialisation du leaderboard...")
-    cur.execute("""
-        INSERT INTO Leaderboard (IdUtilisateur, PointsTotaux)
-        SELECT u.IdUtilisateur,
-               COALESCE(SUM(CASE WHEN t.Montant > 0 THEN t.Montant ELSE 0 END), 0)
-        FROM Utilisateur u
-        LEFT JOIN Transaction t ON u.IdUtilisateur = t.IdUtilisateur
-        GROUP BY u.IdUtilisateur
-        ON CONFLICT (IdUtilisateur) DO UPDATE
-            SET PointsTotaux = EXCLUDED.PointsTotaux
-    """)
 
 except Exception as e:
     conn.rollback()
