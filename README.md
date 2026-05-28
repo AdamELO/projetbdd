@@ -63,10 +63,11 @@ L'application est ensuite accessible sur [http://localhost:8080](http://localhos
 ```
 .
 ├── main.py                  # Point d'entrée
-├── config.py                # Configuration de la base (à créer)
+├── config.py                # Configuration de la base de donnée (à créer)
 ├── database/
 │   ├── db.py                # Connexion PostgreSQL
 │   ├── init_db.py           # Script d'initialisation des données
+│   ├── create_tables_db.py  # Script de création des tables
 │   └── sql/
 │       ├── create.sql       # Schéma de la base (DDL)
 │       └── queries.sql      # Requêtes nommées
@@ -75,7 +76,7 @@ L'application est ensuite accessible sur [http://localhost:8080](http://localhos
 ├── queries/                 # Fonctions d'accès à la base
 │   ├── cours.py
 │   ├── object.py
-│   ├── resume.py
+│   ├── summary.py
 │   ├── stats.py
 │   └── user.py
 └── data/                    # Données initiales (CSV, XML, JSON)
