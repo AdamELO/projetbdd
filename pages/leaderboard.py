@@ -2,7 +2,7 @@ from datetime import date
 from nicegui import ui
 from components.navbar import navbar
 from components.auth import require_auth
-from queries.stats import top_10_users, top_10_by_level
+from queries.stats import top_10_by_total_points, top_10_by_level
 
 
 def draw_table(users):
@@ -23,7 +23,7 @@ def draw_table(users):
 
 @ui.refreshable
 def points_board():
-    users = top_10_users()
+    users = top_10_by_total_points()
     draw_table(users)
 
 @ui.refreshable
@@ -45,7 +45,7 @@ def leaderboard_page():
 
             with ui.tabs().classes('w-full text-primary') as tabs:
                 tab_levels = ui.tab('Les plus Actifs (Niveau)', icon='military_tech')
-                tab_points = ui.tab('Les plus Riches (Points)', icon='monetization_on')
+                tab_points = ui.tab(f'Plus de Points Totaux en {date.today().year}', icon='monetization_on')
             
             with ui.tab_panels(tabs, value=tab_levels).classes('w-full bg-transparent'):
                 

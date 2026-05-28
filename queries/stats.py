@@ -69,6 +69,23 @@ def avg_summaries_per_user():
     conn.close()
     return result
 
+def top_10_by_total_points():
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("""
+    SELECT u.IdUtilisateur AS id, u.Nom AS name, u.Niveau AS level,
+           l.pointstotaux AS points
+    FROM Leaderboard l
+    JOIN Utilisateur u ON l.IdUtilisateur = u.IdUtilisateur
+    WHERE l.Annee = EXTRACT(year FROM CURRENT_DATE)::INTEGER
+    ORDER BY l.pointstotaux DESC
+    LIMIT 10
+""")
+    results = cur.fetchall()
+    cur.close()
+    conn.close()
+    return results
+
 def top_10_by_level():
     conn = get_connection()
     cur = conn.cursor()

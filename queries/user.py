@@ -26,11 +26,11 @@ def register(name, email, password):
         cur.execute("""
             INSERT INTO Utilisateur (Nom, Email, MotDePasse)
             VALUES (%s, %s, %s)
-            RETURNING IdUtilisateur
+            RETURNING IdUtilisateur AS user_id
         """, (name, email, password_hash))
         row = cur.fetchone()
         conn.commit()
-        return {'id': row['idutilisateur']}
+        return {'id': row['user_id']}
     except Exception as e:
         print(f"ERREUR REGISTER: {e}")
         conn.rollback()
@@ -95,12 +95,43 @@ def update_level(user_id, cur=None):
         if local_conn:
             local_conn.close()
 
+def get_user_transactions(user_id):
+    conn = get_connection()
+    cur = conn.cursor()
+    try:
+        cur.execute("""
+            SELECT
+                t.Id,
+                t.Date,
+                t.Montant AS amount,
+                o.Nom AS item_name,
+                CASE
+                    WHEN t.IdObjet IS NOT NULL THEN 'purchase'
+                    WHEN e.Id IS NOT NULL      THEN 'comment'
+                    WHEN r.Id IS NOT NULL      THEN 'summary'
+                    ELSE 'other'
+                END AS type
+            FROM Transaction t
+            LEFT JOIN Objet o ON t.IdObjet = o.Id
+            LEFT JOIN Contribution c ON t.IdContribution = c.Id
+            LEFT JOIN Resume r ON c.Id = r.Id
+            LEFT JOIN Evaluation e ON c.Id = e.Id
+            WHERE t.IdUtilisateur = %s
+            ORDER BY t.Date DESC, t.Id DESC
+        """, (user_id,))
+        return cur.fetchall()
+    except Exception as e:
+        print(f"Erreur get_user_transactions: {e}")
+        return []
+    finally:
+        conn.close()
+
 def get_user_stats(user_id):
     conn = get_connection()
     cur = conn.cursor()
     try:
         cur.execute("""
-            SELECT Points, Niveau as level
+            SELECT Points, Niveau AS level
             FROM Utilisateur
             WHERE IdUtilisateur = %s
         """, (user_id,))

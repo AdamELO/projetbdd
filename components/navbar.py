@@ -28,6 +28,7 @@ def navbar():
             with ui.button(icon='account_circle', text=f"{get_username()}").props('flat color=white'):
                 with ui.menu():
                     ui.menu_item('Mon profil', lambda: ui.navigate.to('/profile'))
+                    ui.menu_item('Mes transactions', lambda: ui.navigate.to('/transactions'))
                     ui.separator()
                     with ui.menu_item(on_click=lambda:(logout(), ui.navigate.to('/login'))):
                         ui.icon('logout').classes('text-lg')
