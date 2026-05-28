@@ -1,6 +1,6 @@
 from nicegui import ui, app
 from components.navbar import navbar
-from components.auth import get_points, require_auth
+from components.auth import get_points, require_auth, get_id
 from components.stars import stars_rating
 from components.comments import comments
 from queries.cours import get_summary_by_id, get_evaluations_by_summary
@@ -144,6 +144,7 @@ def summary_page(summary_id):
                     ui.label(f"Cours : {summary['course_code']} - {summary['course_name']}").classes('text-sm text-gray-600 text-theme')
                     ui.label(f"Par : {summary['author']}").classes('text-sm text-gray-500 text-theme')
                     ui.label(f"Publié le : {summary['date']}").classes('text-sm text-gray-500 text-theme')
+                    ui.label(f"Version : {summary['version']}").classes('text-sm text-gray-500 text-theme')
 
                 with ui.column().classes('items-center gap-1'):
                     ui.label('Note moyenne').classes('text-sm text-gray-500 text-theme')

@@ -44,7 +44,7 @@ def get_summary_by_id(summary_id):
     cur.execute("""
         SELECT r.Id, r.Titre as title, r.Code as course_code,
                co.Nom as course_name, c.Date,
-               u.Nom as author,
+               u.Nom as author, r.Version,
                ROUND(AVG(e.Note), 1) as note,
                COUNT(DISTINCT e.Id) as comment_count
         FROM Resume r
@@ -53,7 +53,7 @@ def get_summary_by_id(summary_id):
         JOIN Utilisateur u ON c.IdUtilisateur = u.IdUtilisateur
         LEFT JOIN Evaluation e ON r.Id = e.IdResume
         WHERE r.Id = %s AND r.Visibilite = 'public' AND c.EstSupprime = FALSE
-        GROUP BY r.Id, r.Titre, r.Code, co.Nom, c.Date, u.Nom
+        GROUP BY r.Id, r.Titre, r.Code, co.Nom, c.Date, u.Nom, r.Version
     """, (summary_id,))
     result = cur.fetchone()
     conn.close()

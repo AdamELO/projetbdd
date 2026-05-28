@@ -109,3 +109,5 @@ CREATE INDEX idx_objet_utilisateur ON ObjetUtilisateur(IdUtilisateur);
 CREATE INDEX idx_utilisateur_points ON Utilisateur(Points DESC);
 CREATE INDEX idx_transaction_objet ON Transaction(IdObjet);
 CREATE INDEX idx_contribution_user_resume ON Contribution(IdUtilisateur, Id);
+CREATE INDEX idx_contribution_not_deleted ON Contribution(IdUtilisateur) WHERE EstSupprime = FALSE;
+CREATE INDEX idx_leaderboard_annee_points ON Leaderboard(Annee, PointsTotaux DESC);

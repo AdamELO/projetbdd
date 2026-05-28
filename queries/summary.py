@@ -33,7 +33,7 @@ def update_summary(summary_id, title, description):
     cur = conn.cursor()
     try:
         cur.execute("""
-            UPDATE Resume SET Titre = %s, Description = %s
+            UPDATE Resume SET Titre = %s, Description = %s, Version = Version + 1
             WHERE Id = %s
         """, (title, description, summary_id))
         conn.commit()

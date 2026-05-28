@@ -107,8 +107,8 @@ def get_user_transactions(user_id):
                 o.Nom AS item_name,
                 CASE
                     WHEN t.IdObjet IS NOT NULL THEN 'purchase'
-                    WHEN e.Id IS NOT NULL      THEN 'comment'
-                    WHEN r.Id IS NOT NULL      THEN 'summary'
+                    WHEN e.Id IS NOT NULL THEN 'comment'
+                    WHEN r.Id IS NOT NULL THEN 'summary'
                     ELSE 'other'
                 END AS type
             FROM Transaction t
