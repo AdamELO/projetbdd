@@ -52,8 +52,22 @@ psql -U <utilisateur> -d <nom_base> -f database/sql/create.sql
 
 **2. Insérer les données initiales :**
 
+Linux/macOS :
+
 ```bash
 PYTHONPATH=. python3 database/init_db.py
+```
+
+Windows (CMD) :
+
+```cmd
+set PYTHONPATH=. && python database/init_db.py
+```
+
+Windows (PowerShell) :
+
+```powershell
+$env:PYTHONPATH="."; python database/init_db.py
 ```
 
 ## Lancer l'application
