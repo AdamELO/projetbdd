@@ -50,9 +50,9 @@ def award_points(user_id, amount, contribution_id=None, cur=None):
         # Mettre à jour le leaderboard uniquement si c'est un gain
         if amount > 0:
             cur.execute("""
-    INSERT INTO Leaderboard (IdUtilisateur, pointstotaux)
-    VALUES (%s, %s)
-    ON CONFLICT (IdUtilisateur) DO UPDATE
+    INSERT INTO Leaderboard (IdUtilisateur, Annee, pointstotaux)
+    VALUES (%s, EXTRACT(year FROM CURRENT_DATE)::INTEGER, %s)
+    ON CONFLICT (IdUtilisateur, Annee) DO UPDATE
         SET pointstotaux = Leaderboard.pointstotaux + %s
 """, (user_id, amount, amount))
         if local_conn:

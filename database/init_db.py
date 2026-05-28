@@ -320,10 +320,10 @@ try:
     # ── 9. LEADERBOARD ────────────────────────────────────────────────────────────
     print("Initialisation du leaderboard...")
     cur.execute("""
-    INSERT INTO Leaderboard (IdUtilisateur, PointsTotaux)
-    SELECT IdUtilisateur, Points
+    INSERT INTO Leaderboard (IdUtilisateur, Annee, PointsTotaux)
+    SELECT IdUtilisateur, EXTRACT(year FROM CURRENT_DATE)::INTEGER, Points
     FROM Utilisateur
-    ON CONFLICT (IdUtilisateur) DO UPDATE
+    ON CONFLICT (IdUtilisateur, Annee) DO UPDATE
         SET PointsTotaux = EXCLUDED.PointsTotaux
     """)
     conn.commit()

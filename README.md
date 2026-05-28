@@ -8,8 +8,14 @@
 ## Installation des dépendances
 
 ```bash
-pip install nicegui psycopg2-binary bcrypt reportlab
+python3 -m pip install nicegui psycopg2-binary bcrypt reportlab
 ```
+
+> Sur certains systèmes (Debian/Ubuntu récents, Arch…), pip peut refuser l'installation hors environnement virtuel. Dans ce cas, utiliser :
+>
+> ```bash
+> python3 -m pip install nicegui psycopg2-binary bcrypt reportlab --break-system-packages
+> ```
 
 ## Configuration
 

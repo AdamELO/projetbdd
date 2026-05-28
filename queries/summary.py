@@ -1,8 +1,7 @@
 from database.db import get_connection
 from queries.user import award_points, update_level
 
-def add_summary(title, description, course_code, user_id):
-    print("ADD_SUMMARY CALLED")
+def add_summary(title, description, course_code, user_id, file_bytes=None):
     conn = get_connection()
     cur = conn.cursor()
     try:
@@ -14,9 +13,9 @@ def add_summary(title, description, course_code, user_id):
         contribution_id = cur.fetchone()['id']
 
         cur.execute("""
-            INSERT INTO Resume (Id, Titre, Description, Code)
-            VALUES (%s, %s, %s, %s)
-        """, (contribution_id, title, description, course_code))
+            INSERT INTO Resume (Id, Titre, Description, Code, Fichier)
+            VALUES (%s, %s, %s, %s, %s)
+        """, (contribution_id, title, description, course_code, file_bytes))
 
         award_points(user_id, 300, contribution_id, cur)
         update_level(user_id, cur)
@@ -46,12 +45,20 @@ def update_summary(summary_id, title, description):
     finally:
         conn.close()
 
-def delete_summary(summary_id):
+def delete_summary(summary_id, user_id):
     conn = get_connection()
     cur = conn.cursor()
     try:
-        cur.execute("DELETE FROM Resume WHERE Id = %s", (summary_id,))
-        cur.execute("DELETE FROM Contribution WHERE Id = %s", (summary_id,))
+        cur.execute("""
+            UPDATE Contribution SET EstSupprime = TRUE
+            WHERE Id = %s AND IdUtilisateur = %s
+        """, (summary_id, user_id))
+        if cur.rowcount == 0:
+            return False
+        cur.execute("""
+            UPDATE Contribution SET EstSupprime = TRUE
+            WHERE Id IN (SELECT Id FROM Evaluation WHERE IdResume = %s)
+        """, (summary_id,))
         conn.commit()
         return True
     except Exception as e:
@@ -113,7 +120,7 @@ def get_random_top_summary():
                 JOIN Utilisateur u ON c.IdUtilisateur = u.IdUtilisateur
                 JOIN Cours c2 ON r.Code = c2.Code
                 JOIN Evaluation e ON e.IdResume = r.Id
-                WHERE r.Visibilite = 'public'
+                WHERE r.Visibilite = 'public' AND c.EstSupprime = FALSE
                 GROUP BY r.Id, r.Titre, r.Description, c2.Nom, c2.Code, u.Nom
             )
             SELECT Id, title, Description, course_name, course_code, author, avg_rating

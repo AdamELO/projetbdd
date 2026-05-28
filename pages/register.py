@@ -3,19 +3,24 @@ import re
 from components.navbar import navbar
 from queries.user import register
 
-# Mettre check_register AVANT register_page
 def check_register(username, email, password, confirm, error):
-    print("CHECK_REGISTER APPELÉ", flush=True)
+    # print("CHECK_REGISTER APPELÉ", flush=True)
     if not username.value or not password.value or not email.value:
         error.set_text('Remplissez tous les champs svp')
     elif not re.match(r'^[\w.-]+@[\w.-]+\.\w+$', email.value):
         error.set_text('Email invalide')
+    elif len(password.value) < 8:
+        error.set_text('Le mot de passe doit contenir au moins 8 caractères')
+    elif not re.search(r'[A-Z]', password.value):
+        error.set_text('Le mot de passe doit contenir au moins une majuscule')
+    elif not re.search(r'\d', password.value):
+        error.set_text('Le mot de passe doit contenir au moins un chiffre')
     elif password.value != confirm.value:
         error.set_text('Les mots de passe ne correspondent pas')
     else:
-        print(f"Appel register avec: {username.value}, {email.value}", flush=True)
+        # print(f"Appel register avec: {username.value}, {email.value}", flush=True)
         result = register(username.value, email.value, password.value)
-        print(f"Résultat register: {result}", flush=True)
+        # print(f"Résultat register: {result}", flush=True)
         if result:
             app.storage.user['authenticated'] = True
             app.storage.user['id'] = result['id']
@@ -40,7 +45,7 @@ def register_page():
         confirm = ui.input('Confirmer', password=True, password_toggle_button=True).classes('w-full')
         error = ui.label('').classes('text-red-500')
 
-        ui.button('S\'inscrire', on_click=lambda: check_register(username, email, password, confirm, error)).classes('w-full mt-4 bg-gray-800').props('flat color=white')        
+        ui.button('S\'inscrire', on_click=lambda: check_register(username, email, password, confirm, error)).classes('w-full mt-4 bg-gray-800').props('flat color=white')
         with ui.row().classes('w-full justify-center items-center gap-1'):
             ui.label('Déjà un compte ?')
             ui.link('Se connecter', '/login').classes('text-blue-500')

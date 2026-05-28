@@ -24,9 +24,15 @@ def courses_page():
         dialog_subtitle = ui.label('').classes('text-sm text-gray-500 mb-2')
         ui.separator()
         title_input = ui.input('Titre du résumé').classes('w-full')
-        upload = ui.upload(label='Fichier (PDF ou DOCX)', auto_upload=True,
-                           max_file_size=10_000_000) \
-            .props('accept=".pdf,.docx"').classes('w-full')
+        file_bytes = {'value': None}
+
+        async def on_upload(e):
+            file_bytes['value'] = await e.file.read()
+
+        upload = ui.upload(label='Fichier (PDF)', auto_upload=True,
+                           max_file_size=10_000_000, on_upload=on_upload) \
+            .props('accept=".pdf"').classes('w-full')
+
         error_label = ui.label('').classes('text-red-500')
 
         def submit():
@@ -38,7 +44,7 @@ def courses_page():
             if not user_id:
                 error_label.set_text('Utilisateur non connecté')
                 return
-            success = add_summary(title_input.value.strip(), None, course['code'], user_id)
+            success = add_summary(title_input.value.strip(), None, course['code'], user_id, file_bytes['value'])
             if success:
                 app.storage.user['points'] = get_points() + 300
                 ui.notify(f'Résumé "{title_input.value}" ajouté !', type='positive')
@@ -57,6 +63,7 @@ def courses_page():
         dialog_subtitle.set_text(course['code'])
         title_input.value = ''
         error_label.set_text('')
+        file_bytes['value'] = None
         upload.reset()
         add_dialog.open()
 

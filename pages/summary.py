@@ -40,15 +40,13 @@ def summary_page(summary_id):
         ui.label('Modifier le résumé').classes('text-xl font-bold')
         ui.separator()
         title_edit = ui.input('Titre', value=summary['title']).classes('w-full')
-        upload_edit = ui.upload(label='Nouveau fichier (PDF ou DOCX)', auto_upload=True,
-                                max_file_size=10_000_000) \
-            .props('accept=".pdf,.docx"').classes('w-full')
+        async def on_upload(e):
+            file_bytes['value'] = await e.file.read()
+
+        upload_edit = ui.upload(label='Nouveau fichier (PDF)', auto_upload=True,
+                                max_file_size=10_000_000, on_upload=on_upload) \
+            .props('accept=".pdf"').classes('w-full')
         error_edit = ui.label('').classes('text-red-500')
-
-        def on_upload(e):
-            file_bytes['value'] = e.content.read()
-
-        upload_edit.on('upload', on_upload)
 
         def submit_edit():
             if not title_edit.value.strip():
@@ -74,7 +72,7 @@ def summary_page(summary_id):
         ui.label('Cette action est irréversible.').classes('text-gray-500')
 
         def confirm_delete():
-            success = delete_summary(summary_id)
+            success = delete_summary(summary_id, get_id())
             if success:
                 ui.notify('Résumé supprimé !', type='positive')
                 delete_dialog.close()
@@ -106,6 +104,10 @@ def summary_page(summary_id):
         error_comment = ui.label('').classes('text-red-500')
 
         def submit_comment():
+            if is_author:
+                ui.notify('Vous ne pouvez pas commenter votre propre résumé', type='warning')
+                comment_dialog.close()
+                return
             if not comment_input.value.strip():
                 error_comment.set_text('Le commentaire est obligatoire')
                 return
@@ -158,8 +160,9 @@ def summary_page(summary_id):
             with ui.row().classes('w-full justify-center gap-2 p-2'):
                 ui.button('Télécharger le résumé', icon='download', on_click=download) \
                     .classes('bg-gray-800').props('flat color=white')
-                ui.button('Ajouter un commentaire', icon='comment',
-                          on_click=comment_dialog.open).props('flat color=primary')
+                if not is_author:
+                    ui.button('Ajouter un commentaire', icon='comment',
+                              on_click=comment_dialog.open).props('flat color=primary')
 
                 if is_author:
                     ui.button('Modifier', icon='edit', on_click=edit_dialog.open).props('flat color=primary')

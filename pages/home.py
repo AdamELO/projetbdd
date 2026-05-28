@@ -30,7 +30,7 @@ def home_page():
             top = get_random_top_summary()
 
             if top:
-                ui.label('Meilleur résumé de ce cours').classes('text-xl m-4 w-full text-center capitalize underline')
+                ui.label('Meilleur résumé d\'un cours aléatoire').classes('text-xl m-4 w-full text-center capitalize underline')
                 with ui.row().classes('w-full items-center justify-between p-4'):
                     with ui.column().classes('gap-1'):
                         ui.label(top['title']).classes('text-lg font-bold')

@@ -9,17 +9,24 @@ SELECT u.IdUtilisateur AS id, u.Nom AS name, COUNT(DISTINCT r.Code) AS course_co
 FROM Utilisateur u
 JOIN Contribution c ON u.IdUtilisateur = c.IdUtilisateur
 JOIN Resume r ON c.Id = r.Id
+WHERE c.EstSupprime = FALSE
 GROUP BY u.IdUtilisateur, u.Nom
 HAVING COUNT(DISTINCT r.Code) >= 3;
 
 -- Le cours ayant le plus de résumés publiés
-SELECT r.Code, c.Nom AS name, COUNT(*) AS summary_count
+SELECT r.Code, co.Nom AS name, COUNT(*) AS summary_count
 FROM Resume r
-JOIN Cours c ON r.Code = c.Code
-GROUP BY r.Code, c.Nom
+JOIN Contribution c ON r.Id = c.Id
+JOIN Cours co ON r.Code = co.Code
+WHERE c.EstSupprime = FALSE
+GROUP BY r.Code, co.Nom
 HAVING COUNT(*) = (
     SELECT MAX(cnt) FROM (
-        SELECT COUNT(*) AS cnt FROM Resume GROUP BY Code
+        SELECT COUNT(*) AS cnt
+        FROM Resume r2
+        JOIN Contribution c2 ON r2.Id = c2.Id
+        WHERE c2.EstSupprime = FALSE
+        GROUP BY r2.Code
     ) AS m
 );
 
@@ -29,7 +36,9 @@ WITH notes AS (
            AVG(e.Note) AS avg_rating,
            RANK() OVER (PARTITION BY r.Code ORDER BY AVG(e.Note) DESC) AS rank
     FROM Resume r
+    JOIN Contribution c ON r.Id = c.Id
     JOIN Evaluation e ON r.Id = e.IdResume
+    WHERE c.EstSupprime = FALSE
     GROUP BY r.Id, r.Code, r.Titre
 )
 SELECT code, title, avg_rating
@@ -43,7 +52,7 @@ FROM Utilisateur u
 WHERE NOT EXISTS (
     SELECT 1 FROM Contribution c
     JOIN Resume r ON c.Id = r.Id
-    WHERE c.IdUtilisateur = u.IdUtilisateur
+    WHERE c.IdUtilisateur = u.IdUtilisateur AND c.EstSupprime = FALSE
 );
 
 -- L'objet cosmétique le plus acheté
@@ -69,7 +78,7 @@ SELECT ROUND(AVG(summary_count), 2) AS average
 FROM (
     SELECT u.IdUtilisateur, COUNT(r.Id) AS summary_count
     FROM Utilisateur u
-    LEFT JOIN Contribution c ON u.IdUtilisateur = c.IdUtilisateur
+    LEFT JOIN Contribution c ON u.IdUtilisateur = c.IdUtilisateur AND c.EstSupprime = FALSE
     LEFT JOIN Resume r ON c.Id = r.Id
     GROUP BY u.IdUtilisateur
 ) AS subquery;

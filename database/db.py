@@ -16,12 +16,12 @@ def get_named_queries():
     queries = {}
     current_name = None
     current_sql = []
-    
+
     path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "sql", "queries.sql")
-    print("=== CHARGEMENT QUERIES ===")
-    print("Chemin :", path)
-    print("Existe :", os.path.exists(path))
-    
+    # print("=== CHARGEMENT QUERIES ===")
+    # print("Chemin :", path)
+    # print("Existe :", os.path.exists(path))
+
     with open(path, encoding="utf-8") as f:
         for line in f:
             line_stripped = line.strip()
@@ -34,7 +34,7 @@ def get_named_queries():
                 current_sql.append(line.rstrip())
         if current_name and current_sql:
             queries[current_name] = "\n".join(current_sql).strip()
-    
-    print("Clés trouvées :", list(queries.keys()))
-    print("=========================")
+
+    # print("Clés trouvées :", list(queries.keys()))
+    # print("=========================")
     return queries

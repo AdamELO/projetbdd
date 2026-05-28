@@ -7,7 +7,12 @@ def get_all_courses():
     SELECT c.Code, c.Nom as name, c.Faculte as faculty,
            COUNT(r.Id) as summary_count
     FROM Cours c
-    LEFT JOIN Resume r ON c.Code = r.Code AND r.Visibilite = 'public'
+    LEFT JOIN (
+        SELECT r.Id, r.Code
+        FROM Resume r
+        JOIN Contribution co ON r.Id = co.Id
+        WHERE r.Visibilite = 'public' AND co.EstSupprime = FALSE
+    ) r ON c.Code = r.Code
     GROUP BY c.Code, c.Nom, c.Faculte
     ORDER BY c.Code
 """)
@@ -25,7 +30,7 @@ def get_summaries_by_course(code):
         FROM Resume r
         JOIN Contribution c ON r.Id = c.Id
         LEFT JOIN Evaluation e ON r.Id = e.IdResume
-        WHERE r.Code = %s AND r.Visibilite = 'public'
+        WHERE r.Code = %s AND r.Visibilite = 'public' AND c.EstSupprime = FALSE
         GROUP BY r.Id, r.Titre, c.Date
         ORDER BY c.Date DESC
     """, (code,))
@@ -47,7 +52,7 @@ def get_summary_by_id(summary_id):
         JOIN Contribution c ON r.Id = c.Id
         JOIN Utilisateur u ON c.IdUtilisateur = u.IdUtilisateur
         LEFT JOIN Evaluation e ON r.Id = e.IdResume
-        WHERE r.Id = %s AND r.Visibilite = 'public'
+        WHERE r.Id = %s AND r.Visibilite = 'public' AND c.EstSupprime = FALSE
         GROUP BY r.Id, r.Titre, r.Code, co.Nom, c.Date, u.Nom
     """, (summary_id,))
     result = cur.fetchone()
@@ -72,7 +77,7 @@ def get_evaluations_by_summary(summary_id):
         GROUP BY obju.IdUtilisateur
     ) active_title ON u.IdUtilisateur = active_title.IdUtilisateur
     LEFT JOIN Objet obj ON active_title.IdObjet = obj.Id
-    WHERE e.IdResume = %s
+    WHERE e.IdResume = %s AND c.EstSupprime = FALSE
     ORDER BY e.Id DESC
     """, (summary_id,))
     results = cur.fetchall()
