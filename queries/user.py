@@ -5,30 +5,29 @@ import bcrypt
 def login(username, password):
     conn = get_connection()
     cur = conn.cursor()
-    cur.execute("SELECT idutilisateur, nom, email, niveau, points, motdepasse FROM Utilisateur WHERE Nom = %s", (username,))
+    cur.execute("SELECT IdUtilisateur AS user_id, Nom AS username, Email, Niveau AS level, Points, MotDePasse AS password_hash FROM Utilisateur WHERE Nom = %s", (username,))
     result = cur.fetchone()
     conn.close()
-    if result and bcrypt.checkpw(password.encode(), result['motdepasse'].encode()):
-        #print(result)
+    if result and bcrypt.checkpw(password.encode(), result['password_hash'].encode()):
         return {
-            'id': result['idutilisateur'],
-            'username': result['nom'],
+            'id': result['user_id'],
+            'username': result['username'],
             'email': result['email'],
-            'level': result['niveau'],
+            'level': result['level'],
             'points': result['points'],
         }
     return None
 
-def register(nom, email, mot_de_passe):
+def register(name, email, password):
     conn = get_connection()
     cur = conn.cursor()
     try:
-        password_hash = bcrypt.hashpw(mot_de_passe.encode(), bcrypt.gensalt()).decode()
+        password_hash = bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
         cur.execute("""
             INSERT INTO Utilisateur (Nom, Email, MotDePasse)
             VALUES (%s, %s, %s)
             RETURNING IdUtilisateur
-        """, (nom, email, password_hash))
+        """, (name, email, password_hash))
         row = cur.fetchone()
         conn.commit()
         return {'id': row['idutilisateur']}
@@ -101,13 +100,13 @@ def get_user_stats(user_id):
     cur = conn.cursor()
     try:
         cur.execute("""
-            SELECT Points as points, Niveau as niveau 
-            FROM Utilisateur 
+            SELECT Points, Niveau as level
+            FROM Utilisateur
             WHERE IdUtilisateur = %s
         """, (user_id,))
         
         result = cur.fetchone()
-        return dict(result) if result else None
+        return result
     except Exception as e:
         print(f"Erreur get_user_stats: {e}")
         return None

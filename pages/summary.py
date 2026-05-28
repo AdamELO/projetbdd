@@ -3,8 +3,8 @@ from components.navbar import navbar
 from components.auth import get_points, require_auth
 from components.stars import stars_rating
 from components.comments import comments
-from queries.cours import get_resume_by_id, get_evaluations_by_resume
-from queries.resume import update_resume, delete_resume, add_evaluation, get_fichier_resume, save_fichier_resume
+from queries.cours import get_summary_by_id, get_evaluations_by_summary
+from queries.summary import update_summary, delete_summary, add_evaluation, get_summary_file, save_summary_file
 import io
 
 
@@ -24,39 +24,39 @@ def summary_page(summary_id):
     require_auth()
     navbar()
 
-    summary = get_resume_by_id(summary_id)
+    summary = get_summary_by_id(summary_id)
     if not summary:
         ui.navigate.to('/')
         return
 
-    evaluations = get_evaluations_by_resume(summary_id)
+    evaluations = get_evaluations_by_summary(summary_id)
     current_user = app.storage.user.get('username', '')
-    is_author = current_user == summary['auteur']
+    is_author = current_user == summary['author']
 
-    fichier_bytes = {'value': None}
+    file_bytes = {'value': None}
 
     # --- Dialog modification ---
     with ui.dialog() as edit_dialog, ui.card().classes('w-full max-w-lg'):
         ui.label('Modifier le résumé').classes('text-xl font-bold')
         ui.separator()
-        titre_edit = ui.input('Titre', value=summary['titre']).classes('w-full')
+        title_edit = ui.input('Titre', value=summary['title']).classes('w-full')
         upload_edit = ui.upload(label='Nouveau fichier (PDF ou DOCX)', auto_upload=True,
                                 max_file_size=10_000_000) \
             .props('accept=".pdf,.docx"').classes('w-full')
         error_edit = ui.label('').classes('text-red-500')
 
         def on_upload(e):
-            fichier_bytes['value'] = e.content.read()
+            file_bytes['value'] = e.content.read()
 
         upload_edit.on('upload', on_upload)
 
         def submit_edit():
-            if not titre_edit.value.strip():
+            if not title_edit.value.strip():
                 error_edit.set_text('Le titre est obligatoire')
                 return
-            success = update_resume(summary_id, titre_edit.value.strip(), None)
-            if success and fichier_bytes['value']:
-                save_fichier_resume(summary_id, fichier_bytes['value'])
+            success = update_summary(summary_id, title_edit.value.strip(), None)
+            if success and file_bytes['value']:
+                save_summary_file(summary_id, file_bytes['value'])
             if success:
                 ui.notify('Résumé modifié !', type='positive')
                 edit_dialog.close()
@@ -74,7 +74,7 @@ def summary_page(summary_id):
         ui.label('Cette action est irréversible.').classes('text-gray-500')
 
         def confirm_delete():
-            success = delete_resume(summary_id)
+            success = delete_summary(summary_id)
             if success:
                 ui.notify('Résumé supprimé !', type='positive')
                 delete_dialog.close()
@@ -97,20 +97,20 @@ def summary_page(summary_id):
             def set_note(n, label):
                 note_value['value'] = n
                 label.set_text(f'Note : {n}/5')
-            note_label = ui.label('Note : 5/5').classes('text-sm text-gray-500')
+            note_label = ui.label('Note : 5/5').classes('text-sm text-gray-500 text-theme')
             with ui.row().classes('gap-1'):
                 for i in range(1, 6):
                     ui.button(str(i), on_click=lambda n=i: set_note(n, note_label)).props('flat').classes('text-yellow-500')
 
-        commentaire_input = ui.textarea('Commentaire').classes('w-full')
+        comment_input = ui.textarea('Commentaire').classes('w-full')
         error_comment = ui.label('').classes('text-red-500')
 
         def submit_comment():
-            if not commentaire_input.value.strip():
+            if not comment_input.value.strip():
                 error_comment.set_text('Le commentaire est obligatoire')
                 return
-            id_utilisateur = app.storage.user.get('id')
-            success = add_evaluation(note_value['value'], commentaire_input.value.strip(), summary_id, id_utilisateur)
+            user_id = app.storage.user.get('id')
+            success = add_evaluation(note_value['value'], comment_input.value.strip(), summary_id, user_id)
             if success:
                 app.storage.user['points'] = get_points() + 50
                 ui.notify('Commentaire ajouté !', type='positive')
@@ -125,29 +125,29 @@ def summary_page(summary_id):
 
     # --- Fonction téléchargement ---
     def download():
-        data = get_fichier_resume(summary_id)
+        data = get_summary_file(summary_id)
         if data and data['fichier']:
             pdf_bytes = bytes(data['fichier'])
         else:
-            pdf_bytes = generate_blank_pdf(summary['titre'])
+            pdf_bytes = generate_blank_pdf(summary['title'])
         ui.download(pdf_bytes, f"resume_{summary_id}.pdf")
 
     # --- Page ---
     with ui.column().classes('w-full items-center p-4 gap-4'):
         with ui.card().classes('w-full max-w-4xl card-theme'):
-            ui.label(summary['titre']).classes('text-xl m-4 w-full text-center capitalize underline')
+            ui.label(summary['title']).classes('text-xl m-4 w-full text-center capitalize underline')
             with ui.row().classes('w-full items-center justify-between p-4'):
                 with ui.column().classes('gap-1'):
-                    ui.label(summary['titre']).classes('text-lg font-bold')
-                    ui.label(f"Cours : {summary['code_cours']} - {summary['nom_cours']}").classes('text-sm text-gray-600 text-theme')
-                    ui.label(f"Par : {summary['auteur']}").classes('text-sm text-gray-500 text-theme')
+                    ui.label(summary['title']).classes('text-lg font-bold')
+                    ui.label(f"Cours : {summary['course_code']} - {summary['course_name']}").classes('text-sm text-gray-600 text-theme')
+                    ui.label(f"Par : {summary['author']}").classes('text-sm text-gray-500 text-theme')
                     ui.label(f"Publié le : {summary['date']}").classes('text-sm text-gray-500 text-theme')
 
                 with ui.column().classes('items-center gap-1'):
                     ui.label('Note moyenne').classes('text-sm text-gray-500 text-theme')
                     if summary['note'] is not None:
                         stars_rating(summary['note'], size='text-xl')
-                        ui.label(f"{summary['note']} / 5 ({summary['nb_commentaires']} avis)").classes('text-sm text-theme')
+                        ui.label(f"{summary['note']} / 5 ({summary['comment_count']} avis)").classes('text-sm text-theme')
                     else:
                         ui.label('Pas encore évalué').classes('text-sm text-gray-400 italic')
 

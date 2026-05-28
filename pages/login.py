@@ -35,10 +35,8 @@ def check_login(username_input, password_input, error):
         active_title = user_active_title(user['id'])
         if active_theme:
             app.storage.user['theme_name'] = active_theme['name']
-            app.storage.user['theme_image'] = active_theme['image']
         else:
             app.storage.user['theme_name'] = None
-            app.storage.user['theme_image'] = None
 
         if active_title:
             app.storage.user['title_name'] = active_title['name']

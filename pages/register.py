@@ -25,7 +25,6 @@ def check_register(username, email, password, confirm, error):
             app.storage.user['points'] = 0
             app.storage.user['title_name'] = None
             app.storage.user['theme_name'] = None
-            app.storage.user['theme_image'] = None
             ui.navigate.to('/')
         else:
             error.set_text('Nom d\'utilisateur ou email déjà pris')

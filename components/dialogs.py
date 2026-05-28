@@ -1,35 +1,35 @@
 from nicegui import ui, app
 from components.auth import get_points
 from components.stars import stars_rating
-from queries.resume import add_resume
+from queries.summary import add_summary
 
 #dialog liste résumés
-def open_resumes_dialog(cours):
+def open_resumes_dialog(course):
     with ui.dialog() as dialog, ui.card().classes('w-full max-w-2xl'):
-        ui.label(f'Résumés - {cours["nom"]}').classes('text-xl font-bold')
-        ui.label(f'{cours["code"]} - {cours["faculte"]}').classes('text-sm text-gray-500 mb-2')
+        ui.label(f'Résumés - {course["name"]}').classes('text-xl font-bold')
+        ui.label(f'{course["code"]} - {course["faculty"]}').classes('text-sm text-gray-500 mb-2')
         ui.separator()
 
-        if not cours['resumes']:
+        if not course['summaries']:
             ui.label('Aucun résumé disponible pour ce cours.').classes('text-gray-400 italic py-4')
         else:
             with ui.scroll_area().classes('w-full').style('max-height: 400px;'):
-                for resume in cours['resumes']:
+                for summary in course['summaries']:
                     with ui.card().classes('w-full my-2'):
                         with ui.row().classes('w-full items-center justify-between'):
                             with ui.column().classes('gap-0'):
-                                ui.label(resume['titre']).classes('font-bold')
-                                ui.label(f'Publié le {resume["date"]}').classes('text-xs text-gray-500')
+                                ui.label(summary['title']).classes('font-bold')
+                                ui.label(f'Publié le {summary["date"]}').classes('text-xs text-gray-500')
 
                             with ui.row().classes('items-center gap-4'):
-                                if resume['note'] is not None:
-                                    stars_rating(resume['note'])
-                                    ui.label(f'{resume["nb_commentaires"]} commentaire(s)').classes('text-xs text-gray-500')
+                                if summary['note'] is not None:
+                                    stars_rating(summary['note'])
+                                    ui.label(f'{summary["comment_count"]} commentaire(s)').classes('text-xs text-gray-500')
                                 else:
                                     ui.label('Pas encore évalué').classes('text-xs text-gray-400 italic')
 
                                 ui.button(icon='visibility',
-                                          on_click=lambda r=resume: (dialog.close(), ui.navigate.to(f'/summary/{r["id"]}'))) \
+                                          on_click=lambda s=summary: (dialog.close(), ui.navigate.to(f'/summary/{s["id"]}'))) \
                                     .props('flat round color=primary')
 
         with ui.row().classes('w-full justify-end mt-2'):
@@ -40,13 +40,13 @@ def open_resumes_dialog(cours):
 
 
 #dialog ajout résumé
-def open_add_resume_dialog(cours):
+def open_add_resume_dialog(course):
     with ui.dialog() as dialog, ui.card().classes('w-full max-w-lg'):
-        ui.label(f'Ajouter un résumé - {cours["nom"]}').classes('text-xl font-bold')
-        ui.label(f'{cours["code"]}').classes('text-sm text-gray-500 mb-2')
+        ui.label(f'Ajouter un résumé - {course["name"]}').classes('text-xl font-bold')
+        ui.label(f'{course["code"]}').classes('text-sm text-gray-500 mb-2')
         ui.separator()
 
-        titre = ui.input('Titre du résumé').classes('w-full')
+        title = ui.input('Titre du résumé').classes('w-full')
         upload = ui.upload(label='Fichier (PDF ou DOCX)', auto_upload=True,
                            max_file_size=10_000_000) \
             .props('accept=".pdf,.docx"').classes('w-full')
@@ -54,21 +54,21 @@ def open_add_resume_dialog(cours):
         error = ui.label('').classes('text-red-500')
 
         def submit():
-            print("SUBMIT APPELÉ")
+            print("SUBMIT CALLED")
 
-            if not titre.value:
+            if not title.value:
                 error.set_text('Le titre est obligatoire')
                 return
-            id_utilisateur = app.storage.user.get('id')
-            success = add_resume(titre.value, None, cours['code'], id_utilisateur)
+            user_id = app.storage.user.get('id')
+            success = add_summary(title.value, None, course['code'], user_id)
             if success:
                 app.storage.user['points'] = get_points() + 500
-                ui.notify(f'Résumé "{titre.value}" ajouté !', type='positive')
+                ui.notify(f'Résumé "{title.value}" ajouté !', type='positive')
                 dialog.close()
                 ui.timer(2, lambda: ui.navigate.to('/classes'), once=True)
             else:
                 error.set_text('Erreur lors de l\'ajout du résumé')
-        
+
         with ui.row().classes('w-full justify-end mt-4 gap-2'):
             ui.button('Annuler', on_click=dialog.close).props('flat')
             ui.button('Ajouter', on_click=lambda: submit()).props('color=primary')

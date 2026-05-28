@@ -1,7 +1,7 @@
 from nicegui import ui, app
 from components.navbar import navbar
 from components.auth import get_id, get_title, get_theme_name, require_auth
-from queries.object import user_titles, user_themes, user_badges, user_cosmetiques, activate_title, activate_theme, deactivate_theme
+from queries.object import user_titles, user_themes, user_badges, user_cosmetics, activate_title, activate_theme, deactivate_theme
 
 
 #page de profil
@@ -33,10 +33,7 @@ def profile_page():
                 with ui.grid(columns=3).classes('w-full gap-4 p-4 justify-items-center'):
                     for badge in badges:
                         with ui.column().classes('items-center gap-1'):
-                            if badge['image']:
-                                ui.image(f"/images/badge/{badge['image']}").tooltip(badge['description']).classes('w-24 h-28 object-contain p-2')
-                            else:
-                                ui.icon('military_tech').classes('text-5xl text-yellow-500')
+                            ui.icon('military_tech').classes('text-5xl text-yellow-500')
                             ui.label(badge['name']).classes('text-xs text-center text-theme')
             else:
                 ui.label('Aucun badge débloqué').classes('text-center text-gray-400 text-theme italic w-full p-4')
@@ -74,7 +71,6 @@ def profile_page():
                     success = deactivate_theme(user_id)
                     if success:
                         app.storage.user['theme_name'] = None
-                        app.storage.user['theme_image'] = None
                         ui.notify('Thème désactivé', type='positive')
                         ui.navigate.to('/profile')
                 ui.button('Désactiver le thème', icon='format_color_reset', on_click=deactivate).props('flat color=negative').classes('w-full')
@@ -89,13 +85,13 @@ def profile_page():
                                 success = activate_theme(user_id, tid)
                                 if success:
                                     app.storage.user['theme_name'] = tname
-                                    app.storage.user['theme_image'] = None
                                     active_theme_label.set_text(f'Thème actif : {tname}')
                                     ui.notify(f'Thème "{tname}" activé !', type='positive')
                                     ui.navigate.to('/profile')
                                 else:
                                     ui.notify('Erreur lors de l\'activation', type='negative')
                             ui.button('Activer', on_click=activate_th).props('flat color="white"').classes('text-xs bg-gray-800')
+
             else:          
                 ui.label('Aucun thème débloqué').classes('text-center text-gray-400 text-theme italic w-full')
         
@@ -103,11 +99,11 @@ def profile_page():
 # Après la section thèmes :
         with ui.card().classes('w-full max-w-4xl card-theme'):
             ui.label('mes cosmétiques').classes('text-xl font-bold text-center w-full capitalize underline')
-    
-            cosmetiques = user_cosmetiques(user_id)
-            if cosmetiques:
+
+            cosmetics = user_cosmetics(user_id)
+            if cosmetics:
                 with ui.grid(columns=3).classes('w-full gap-4 p-4 justify-items-center'):
-                    for c in cosmetiques:
+                    for c in cosmetics:
                         with ui.column().classes('items-center gap-1'):
                             ui.icon('auto_awesome').classes('text-5xl text-yellow-500')
                             ui.label(c['name']).classes('text-xs text-center text-theme')

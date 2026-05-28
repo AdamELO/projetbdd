@@ -1,5 +1,5 @@
 from nicegui import ui
-from components.auth import get_theme_name, get_theme_image
+from components.auth import get_theme_name
 
 THEMES = {
     'Profil sombre': {
@@ -77,15 +77,3 @@ def background_theme():
         """)
     else:
         ui.query('body').classes('bg-gray-200')
-
-def css_img_theme():
-    ui.add_css('''
-        .card-theme {
-            background: rgba(0, 0, 0, 0.4) !important;
-            backdrop-filter: blur(8px);
-            color: white !important;
-        }
-        .text-theme {
-            color: white !important;
-        }
-    ''')

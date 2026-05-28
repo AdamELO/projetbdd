@@ -20,9 +20,6 @@ def get_points() :
 def get_theme_name() :
     return app.storage.user.get('theme_name', None)
 
-def get_theme_image() :
-    return app.storage.user.get('theme_image', None)
-
 def get_title() :
     return app.storage.user.get('title_name', None)
 
@@ -33,7 +30,6 @@ def logout():
     app.storage.user['level'] = 0
     app.storage.user['points'] = 0
     app.storage.user['theme_name'] = None
-    app.storage.user['theme_image'] = None
     app.storage.user['title_name'] = None
 
 
@@ -43,7 +39,7 @@ def sync_session():
         stats = get_user_stats(user_id)
         if stats:
             app.storage.user['points'] = stats['points']
-            app.storage.user['level'] = stats['niveau']
+            app.storage.user['level'] = stats['level']
 
 
 def require_auth():

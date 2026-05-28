@@ -9,14 +9,14 @@ from config import DB_HOST, DB_NAME, DB_USER, DB_PASSWORD, DB_PORT
 conn = psycopg2.connect(host=DB_HOST, dbname=DB_NAME, user=DB_USER, password=DB_PASSWORD, port=DB_PORT)
 cur = conn.cursor()
 
-def normaliser(texte):
-    """Enlève accents et met en minuscules pour comparaison."""
-    if texte is None:
+def normalize(text):
+    """Remove accents and lowercase for comparison."""
+    if text is None:
         return ""
-    texte = texte.strip().lower()
-    texte = unicodedata.normalize('NFD', texte)
-    texte = ''.join(c for c in texte if unicodedata.category(c) != 'Mn')
-    return texte
+    text = text.strip().lower()
+    text = unicodedata.normalize('NFD', text)
+    text = ''.join(c for c in text if unicodedata.category(c) != 'Mn')
+    return text
 
 try:
     # COURS
@@ -24,59 +24,57 @@ try:
     with open("data/cours.csv", encoding="utf-8") as f:
         reader = csv.DictReader(f)
         for row in reader:
-            annee = row.get("annee_academique", None)
+            year = row.get("annee_academique", None)
             cur.execute("""
                 INSERT INTO Cours (Code, Nom, Faculte, Credits, AnneeAcademique)
                 VALUES (%s, %s, %s, %s, %s)
                 ON CONFLICT DO NOTHING
-            """, (row["code_cours"], row["nom"], row["faculte"], int(row["credits"]), annee))
+            """, (row["code_cours"], row["nom"], row["faculte"], int(row["credits"]), year))
 
-    # OBJETS COSMÉTIQUES 
+    # OBJETS COSMÉTIQUES
     print("Insertion des objets cosmétiques...")
     tree = ET.parse("data/recompenses.xml")
     root = tree.getroot()
 
-    for objet in root.findall("objet"):
-        obj_id = int(objet.get("id"))
-        nom = objet.find("nom").text
-        type_ = objet.find("type").text
-        description = objet.find("description").text
-        prix = int(objet.find("prix").text)
+    for obj in root.findall("objet"):
+        obj_id = int(obj.get("id"))
+        name = obj.find("nom").text
+        type_ = obj.find("type").text
+        description = obj.find("description").text
+        price = int(obj.find("prix").text)
 
         cur.execute("""
-            INSERT INTO ObjetCosmetique (Id, Nom, Description, Prix)
+            INSERT INTO Objet (Id, Nom, Description, Prix)
             VALUES (%s, %s, %s, %s)
             ON CONFLICT DO NOTHING
-        """, (obj_id, nom, description, prix))
+        """, (obj_id, name, description, price))
 
         if type_ == "badge":
-            image = objet.find("image")
             cur.execute("""
-                INSERT INTO Badge (Id, Image) VALUES (%s, %s)
+                INSERT INTO Badge (Id) VALUES (%s)
                 ON CONFLICT DO NOTHING
-            """, (obj_id, image.text if image is not None else None))
+            """, (obj_id,))
         elif type_ == "titre":
             cur.execute("""
                 INSERT INTO Titre (Id) VALUES (%s)
                 ON CONFLICT DO NOTHING
             """, (obj_id,))
         elif type_ == "theme":
-            image = objet.find("image")
             cur.execute("""
-                INSERT INTO Theme (Id, Image) VALUES (%s, %s)
+                INSERT INTO Theme (Id) VALUES (%s)
                 ON CONFLICT DO NOTHING
-            """, (obj_id, image.text if image is not None else None))
+            """, (obj_id,))
         elif type_ == "cosmetique":
-            icone = objet.find("icone")
+            icon = obj.find("icone")
             cur.execute("""
                 INSERT INTO Cosmetique (Id, Icone) VALUES (%s, %s)
                 ON CONFLICT DO NOTHING
-            """, (obj_id, icone.text if icone is not None else None))
+            """, (obj_id, icon.text if icon is not None else None))
 
     cur.execute("""
         SELECT setval(
-            pg_get_serial_sequence('ObjetCosmetique', 'id'),
-            (SELECT MAX(Id) FROM ObjetCosmetique)
+            pg_get_serial_sequence('Objet', 'id'),
+            (SELECT MAX(Id) FROM Objet)
         )
     """)
 
@@ -85,26 +83,26 @@ try:
     tree_u = ET.parse("data/utilisateurs.xml")
     root_u = tree_u.getroot()
 
-    nom_to_id = {}
+    name_to_id = {}
 
-    for utilisateur in root_u.findall("utilisateur"):
-        uid = int(utilisateur.get("id"))
-        nom = utilisateur.find("nomUtilisateur").text
-        email = utilisateur.find("email").text
-        date_inscription = utilisateur.find("dateInscription").text
-        points_el = utilisateur.find("points")
-        niveau_el = utilisateur.find("niveau")
+    for user in root_u.findall("utilisateur"):
+        uid = int(user.get("id"))
+        name = user.find("nomUtilisateur").text
+        email = user.find("email").text
+        registration_date = user.find("dateInscription").text
+        points_el = user.find("points")
+        level_el = user.find("niveau")
         points = int(points_el.text) if points_el is not None and points_el.text else 0
-        niveau = int(niveau_el.text) if niveau_el is not None and niveau_el.text else 1
+        level = int(level_el.text) if level_el is not None and level_el.text else 1
 
         password_hash = bcrypt.hashpw("password123".encode(), bcrypt.gensalt()).decode()
         cur.execute("""
             INSERT INTO Utilisateur (IdUtilisateur, Nom, Email, MotDePasse, DateInscription, Points, Niveau)
             VALUES (%s, %s, %s, %s, %s, %s, %s)
             ON CONFLICT DO NOTHING
-        """, (uid, nom, email, password_hash, date_inscription, points, niveau))
+        """, (uid, name, email, password_hash, registration_date, points, level))
 
-        nom_to_id[nom] = uid
+        name_to_id[name] = uid
 
     # Resynchroniser la séquence Utilisateur
     cur.execute("""
@@ -121,52 +119,52 @@ try:
     with open("data/commentaires.json", encoding="utf-8") as f:
         data_json = json.load(f)
 
-    titre_to_cours = {}
+    title_to_course = {}
     for eval_ in data_json["evaluations"]:
-        titre = eval_["resume"]["titre"]
-        cours = eval_["resume"]["cours"]
-        titre_to_cours[titre] = cours
+        title = eval_["resume"]["titre"]
+        course = eval_["resume"]["cours"]
+        title_to_course[title] = course
 
-    for utilisateur in root_u.findall("utilisateur"):
-        uid = int(utilisateur.get("id"))
-        resumes = utilisateur.find("resumes")
-        if resumes is None:
+    for user in root_u.findall("utilisateur"):
+        uid = int(user.get("id"))
+        summaries = user.find("resumes")
+        if summaries is None:
             continue
 
-        for resume in resumes.findall("resume"):
-            cours_el  = resume.find("cours")
-            titre_el  = resume.find("titre")
-            date_el   = resume.find("datePublication")
+        for summary in summaries.findall("resume"):
+            course_el = summary.find("cours")
+            title_el  = summary.find("titre")
+            date_el   = summary.find("datePublication")
 
-            cours_code = cours_el.text.strip() if cours_el is not None and cours_el.text and cours_el.text.strip() else None
-            titre      = titre_el.text          if titre_el  is not None and titre_el.text  else None
-            date_pub   = date_el.text           if date_el   is not None and date_el.text   else None
+            course_code = course_el.text.strip() if course_el is not None and course_el.text and course_el.text.strip() else None
+            title       = title_el.text           if title_el  is not None and title_el.text  else None
+            date_pub    = date_el.text            if date_el   is not None and date_el.text   else None
 
-            if not titre or not date_pub:
-                print(f"  Résumé ignoré (données manquantes) : uid={uid}, titre={titre}")
+            if not title or not date_pub:
+                print(f"  Résumé ignoré (données manquantes) : uid={uid}, titre={title}")
                 continue
 
             # Toujours vérifier via le JSON d'abord si le titre y est référencé
-            bon_code_json = titre_to_cours.get(titre)
+            valid_json_code = title_to_course.get(title)
 
-            if bon_code_json:
+            if valid_json_code:
                 # Le JSON fait autorité sur le code cours
-                cur.execute("SELECT Code FROM Cours WHERE Code = %s", (bon_code_json,))
+                cur.execute("SELECT Code FROM Cours WHERE Code = %s", (valid_json_code,))
                 if cur.fetchone() is not None:
-                    if cours_code != bon_code_json:
-                        print(f"  Code corrigé : '{cours_code}' → '{bon_code_json}' (via titre '{titre}')")
-                    cours_code = bon_code_json
+                    if course_code != valid_json_code:
+                        print(f"  Code corrigé : '{course_code}' → '{valid_json_code}' (via titre '{title}')")
+                    course_code = valid_json_code
                 else:
-                    print(f"  Résumé ignoré — code JSON introuvable en DB : {bon_code_json} / '{titre}'")
+                    print(f"  Résumé ignoré — code JSON introuvable en DB : {valid_json_code} / '{title}'")
                     continue
-            elif cours_code:
+            elif course_code:
                 # Pas dans le JSON, vérifier que le code XML existe
-                cur.execute("SELECT Code FROM Cours WHERE Code = %s", (cours_code,))
+                cur.execute("SELECT Code FROM Cours WHERE Code = %s", (course_code,))
                 if cur.fetchone() is None:
-                    print(f"  Résumé ignoré — code inconnu et titre absent du JSON : {cours_code} / '{titre}'")
+                    print(f"  Résumé ignoré — code inconnu et titre absent du JSON : {course_code} / '{title}'")
                     continue
             else:
-                print(f"  Résumé ignoré — code vide et titre absent du JSON : titre='{titre}'")
+                print(f"  Résumé ignoré — code vide et titre absent du JSON : titre='{title}'")
                 continue
 
             cur.execute("""
@@ -174,7 +172,7 @@ try:
                 JOIN Contribution c ON r.Id = c.Id
                 WHERE r.Titre = %s AND r.Code = %s AND c.IdUtilisateur = %s
                 LIMIT 1
-            """, (titre, cours_code, uid))
+            """, (title, course_code, uid))
             if cur.fetchone() is not None:
                 continue
 
@@ -189,7 +187,7 @@ try:
                 INSERT INTO Resume (Id, Titre, Description, Version, Visibilite, Code)
                 VALUES (%s, %s, %s, %s, %s, %s)
                 ON CONFLICT DO NOTHING
-            """, (contribution_id, titre, "", 1, "public", cours_code))
+            """, (contribution_id, title, "", 1, "public", course_code))
 
 
     # ── 5. ÉVALUATIONS ────────────────────────────────────────────────────────
@@ -198,36 +196,36 @@ try:
         data = json.load(f)
 
     for eval_ in data["evaluations"]:
-        auteur      = eval_["auteur"]
-        cours_code  = eval_["resume"]["cours"]
-        titre_resume = eval_["resume"]["titre"]
+        author      = eval_["auteur"]
+        course_code = eval_["resume"]["cours"]
+        summary_title = eval_["resume"]["titre"]
         note        = eval_["note"]
-        commentaire = eval_["commentaire"]
+        comment     = eval_["commentaire"]
 
-        if auteur not in nom_to_id:
-            print(f"  Auteur inconnu ignoré : {auteur}")
+        if author not in name_to_id:
+            print(f"  Auteur inconnu ignoré : {author}")
             continue
 
-        uid_auteur = nom_to_id[auteur]
+        author_uid = name_to_id[author]
 
         cur.execute("""
             SELECT r.Id FROM Resume r
             JOIN Contribution c ON r.Id = c.Id
             WHERE r.Titre = %s AND r.Code = %s
             LIMIT 1
-        """, (titre_resume, cours_code))
+        """, (summary_title, course_code))
         row = cur.fetchone()
         if row is None:
-            print(f"  Résumé non trouvé pour évaluation : '{titre_resume}' ({cours_code})")
+            print(f"  Résumé non trouvé pour évaluation : '{summary_title}' ({course_code})")
             continue
-        id_resume = row[0]
+        summary_id = row[0]
 
         cur.execute("""
             SELECT e.Id FROM Evaluation e
             JOIN Contribution c ON e.Id = c.Id
             WHERE e.IdResume = %s AND c.IdUtilisateur = %s AND e.Commentaire = %s
             LIMIT 1
-        """, (id_resume, uid_auteur, commentaire))
+        """, (summary_id, author_uid, comment))
         if cur.fetchone() is not None:
             continue
 
@@ -235,77 +233,77 @@ try:
             INSERT INTO Contribution (Date, IdUtilisateur)
             VALUES (CURRENT_DATE, %s)
             RETURNING Id
-        """, (uid_auteur,))
+        """, (author_uid,))
         contribution_id = cur.fetchone()[0]
 
         cur.execute("""
             INSERT INTO Evaluation (Id, Note, Commentaire, IdResume)
             VALUES (%s, %s, %s, %s)
             ON CONFLICT DO NOTHING
-        """, (contribution_id, note, commentaire, id_resume))
+        """, (contribution_id, note, comment, summary_id))
 
     # ── 6. TRANSACTIONS ET ACHATS ─────────────────────────────────────────────
     print("Insertion des transactions (achats)...")
-    cur.execute("SELECT Id, Nom FROM ObjetCosmetique")
-    objets_db = cur.fetchall()
-    objets_map = {normaliser(nom): id_ for id_, nom in objets_db}
+    cur.execute("SELECT Id, Nom FROM Objet")
+    objects_db = cur.fetchall()
+    objects_map = {normalize(name): id_ for id_, name in objects_db}
 
-    for utilisateur in root_u.findall("utilisateur"):
-        uid = int(utilisateur.get("id"))
-        achats = utilisateur.find("achats")
-        if achats is None:
+    for user in root_u.findall("utilisateur"):
+        uid = int(user.get("id"))
+        purchases = user.find("achats")
+        if purchases is None:
             continue
 
-        for objet in achats.findall("objet"):
-            if objet.text is None:
+        for obj in purchases.findall("objet"):
+            if obj.text is None:
                 continue
 
-            nom_normalise = normaliser(objet.text)
-            id_objet = objets_map.get(nom_normalise)
-            if id_objet is None:
-                print(f"  Objet non trouvé : '{objet.text}'")
+            normalized_name = normalize(obj.text)
+            object_id = objects_map.get(normalized_name)
+            if object_id is None:
+                print(f"  Objet non trouvé : '{obj.text}'")
                 continue
 
             # Vérifier si l'achat existe déjà pour éviter les doublons au re-run
             cur.execute("""
                 SELECT 1 FROM ObjetUtilisateur
-                WHERE IdObjetCosmetique = %s AND IdUtilisateur = %s
-            """, (id_objet, uid))
+                WHERE IdObjet = %s AND IdUtilisateur = %s
+            """, (object_id, uid))
             if cur.fetchone() is not None:
                 continue
 
-            cur.execute("SELECT Prix FROM ObjetCosmetique WHERE Id = %s", (id_objet,))
-            prix = cur.fetchone()[0]
+            cur.execute("SELECT Prix FROM Objet WHERE Id = %s", (object_id,))
+            price = cur.fetchone()[0]
 
             cur.execute("""
-                INSERT INTO Transaction (Date, Montant, IdObjetCosmetique, IdUtilisateur)
+                INSERT INTO Transaction (Date, Montant, IdObjet, IdUtilisateur)
                 VALUES (CURRENT_DATE, %s, %s, %s)
-            """, (-prix, id_objet, uid))
+            """, (-price, object_id, uid))
 
             cur.execute("""
-                INSERT INTO ObjetUtilisateur (IdObjetCosmetique, IdUtilisateur, EstActif)
+                INSERT INTO ObjetUtilisateur (IdObjet, IdUtilisateur, EstActif)
                 VALUES (%s, %s, FALSE)
                 ON CONFLICT DO NOTHING
-            """, (id_objet, uid))
+            """, (object_id, uid))
 
     # ── 7. ACTIVATION DES TITRES ──────────────────────────────────────────────
     print("Activation des titres actifs...")
-    for utilisateur in root_u.findall("utilisateur"):
-        uid = int(utilisateur.get("id"))
-        titre_actif_el = utilisateur.find("titreActif")
-        if titre_actif_el is None or not titre_actif_el.text:
+    for user in root_u.findall("utilisateur"):
+        uid = int(user.get("id"))
+        active_title_el = user.find("titreActif")
+        if active_title_el is None or not active_title_el.text:
             continue
 
-        titre_actif = titre_actif_el.text.strip()
+        active_title = active_title_el.text.strip()
         cur.execute("""
             UPDATE ObjetUtilisateur ou
             SET EstActif = TRUE
-            FROM ObjetCosmetique obj
+            FROM Objet obj
             JOIN Titre t ON obj.Id = t.Id
-            WHERE ou.IdObjetCosmetique = obj.Id
+            WHERE ou.IdObjet = obj.Id
             AND ou.IdUtilisateur = %s
             AND obj.Nom = %s
-        """, (uid, titre_actif))
+        """, (uid, active_title))
 
     # ── 8. RESYNCHRONISATION DES SÉQUENCES ───────────────────────────────────
     print("Resynchronisation des séquences...")

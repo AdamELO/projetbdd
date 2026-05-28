@@ -2,7 +2,7 @@ from nicegui import ui, app
 from components.item import item_card
 from components.navbar import navbar
 from components.auth import require_auth, get_id
-from queries.object import get_badges_not_owned, get_cosmetic_not_owned, get_themes_not_owned, get_titles_not_owned
+from queries.object import get_badges_not_owned, get_cosmetics_not_owned, get_themes_not_owned, get_titles_not_owned
 
 #page de la boutique
 @ui.page('/shop')
@@ -14,7 +14,7 @@ def shop_page():
     titles = get_titles_not_owned(userId)
     badges = get_badges_not_owned(userId)
     themes = get_themes_not_owned(userId)
-    cosmetic = get_cosmetic_not_owned(userId)
+    cosmetic = get_cosmetics_not_owned(userId)
 
 
     ui.label().bind_text_from(app.storage.user, 'points', lambda pts: f'Boutique : vous avez actuellement {pts} pts').classes('text-2xl m-1 w-full text-center text-theme capitalize underline')

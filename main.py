@@ -1,4 +1,4 @@
-from nicegui import ui, app
+from nicegui import ui
 #importation des pages
 import pages.home
 import pages.login

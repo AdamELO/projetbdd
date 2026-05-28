@@ -1,3 +1,4 @@
+from datetime import date
 from nicegui import ui
 from components.navbar import navbar
 from components.auth import require_auth
@@ -16,8 +17,8 @@ def draw_table(users):
             icon = f'🥇 {i}' if i == 1 else f'🥈 {i}' if i == 2 else f'🥉 {i}' if i == 3 else str(i)
             
             ui.label(icon).classes('text-center text-theme')
-            ui.label(u['nom']).classes('text-center text-theme')
-            ui.label(str(u['niveau'])).classes('text-center text-theme font-bold text-primary')
+            ui.label(u['name']).classes('text-center text-theme')
+            ui.label(str(u['level'])).classes('text-center text-theme font-bold text-primary')
             ui.label(f"{u['points']} pts").classes('text-center text-theme font-bold text-secondary')
 
 @ui.refreshable
@@ -39,7 +40,7 @@ def leaderboard_page():
         with ui.card().classes('w-full max-w-4xl card-theme'):
             
             with ui.row().classes('w-full justify-between items-center mb-4'):
-                ui.label('Tableaux des scores').classes('text-2xl font-bold')
+                ui.label(f'Tableaux des scores en {date.today().year}').classes('text-2xl font-bold')
                 ui.button(icon='refresh', on_click=lambda: (points_board.refresh(), level_board.refresh())).props('flat round')
 
             with ui.tabs().classes('w-full text-primary') as tabs:

@@ -5,7 +5,7 @@ from components.stars import stars_rating
 from components.item import item_card
 from components.comments import comments
 from queries.object import get_lasts_items
-from queries.resume import get_random_top_resume
+from queries.summary import get_random_top_summary
 
 #page d'accueil
 @ui.page('/')
@@ -27,19 +27,19 @@ def home_page():
 
         # Résumé du mois
         with ui.card().classes('w-full max-w-4xl card-theme'):
-            top = get_random_top_resume()
+            top = get_random_top_summary()
 
             if top:
                 ui.label('Meilleur résumé de ce cours').classes('text-xl m-4 w-full text-center capitalize underline')
                 with ui.row().classes('w-full items-center justify-between p-4'):
                     with ui.column().classes('gap-1'):
-                        ui.label(top['titre']).classes('text-lg font-bold')
-                        ui.label(f"Cours : {top['cours_code']} - {top['cours_nom']}").classes('text-sm text-gray-600 text-theme')
-                        display_auteur = top['auteur'].replace('_', ' ').title()
-                        ui.label(f'Par : {display_auteur}').classes('text-sm text-gray-500 text-theme')
+                        ui.label(top['title']).classes('text-lg font-bold')
+                        ui.label(f"Cours : {top['course_code']} - {top['course_name']}").classes('text-sm text-gray-600 text-theme')
+                        display_author = top['author'].replace('_', ' ').title()
+                        ui.label(f'Par : {display_author}').classes('text-sm text-gray-500 text-theme')
                 with ui.column().classes('items-center gap-1'):
                     ui.label('Note moyenne').classes('text-sm text-gray-500 text-theme')
-                stars_rating(float(top['note_moyenne'] or 0), size='text-xl')
+                stars_rating(float(top['avg_rating'] or 0), size='text-xl')
 
                 ui.separator()
                 with ui.row().classes('w-full justify-center'):

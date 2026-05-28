@@ -25,9 +25,20 @@ DB_PORT = 5432     # port par défaut
 
 ## Initialisation de la base de données
 
+> Toutes les commandes sont à exécuter depuis la **racine du projet**.
+> Selon ton OS, utilise `python3` (Linux/macOS) ou `python` (Windows).
+
 Deux étapes à effectuer une seule fois, dans cet ordre.
 
 **1. Créer les tables :**
+
+Via le script Python (recommandé) :
+
+```bash
+python3 database/create_tables_db.py
+```
+
+Ou directement avec psql :
 
 ```bash
 psql -U <utilisateur> -d <nom_base> -f database/sql/create.sql
@@ -36,13 +47,13 @@ psql -U <utilisateur> -d <nom_base> -f database/sql/create.sql
 **2. Insérer les données initiales :**
 
 ```bash
-python -m database.init_db
+PYTHONPATH=. python3 database/init_db.py
 ```
 
 ## Lancer l'application
 
 ```bash
-python main.py
+python3 main.py
 ```
 
 L'application est ensuite accessible sur [http://localhost:8080](http://localhost:8080).

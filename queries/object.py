@@ -5,9 +5,9 @@ def user_titles(user_id):
     conn = get_connection()
     cur = conn.cursor()
     cur.execute("""
-        SELECT obj.Id as id, obj.Nom as name, obju.EstActif as actif
-        FROM ObjetCosmetique obj
-        JOIN ObjetUtilisateur obju ON obj.Id = obju.IdObjetCosmetique
+        SELECT obj.Id, obj.Nom as name, obju.EstActif as actif
+        FROM Objet obj
+        JOIN ObjetUtilisateur obju ON obj.Id = obju.IdObjet
         JOIN Titre t ON obj.Id = t.Id
         WHERE obju.IdUtilisateur = %s
         ORDER BY obju.EstActif DESC, obj.Nom
@@ -21,9 +21,9 @@ def user_themes(user_id):
     conn = get_connection()
     cur = conn.cursor()
     cur.execute("""
-        SELECT obj.Id as id, obj.Nom as name, t.Image as image, obju.EstActif as actif
-        FROM ObjetCosmetique obj
-        JOIN ObjetUtilisateur obju ON obj.Id = obju.IdObjetCosmetique
+        SELECT obj.Id, obj.Nom as name, obju.EstActif as actif
+        FROM Objet obj
+        JOIN ObjetUtilisateur obju ON obj.Id = obju.IdObjet
         JOIN Theme t ON obj.Id = t.Id
         WHERE obju.IdUtilisateur = %s
         ORDER BY obju.EstActif DESC, obj.Nom
@@ -38,8 +38,8 @@ def user_active_title(user_id):
     cur = conn.cursor()
     cur.execute("""
         SELECT obj.Nom as name
-        FROM ObjetCosmetique obj
-        JOIN ObjetUtilisateur obju ON obj.id = obju.IdObjetCosmetique
+        FROM Objet obj
+        JOIN ObjetUtilisateur obju ON obj.id = obju.IdObjet
         JOIN Titre t ON obj.Id = t.Id
         WHERE obju.IdUtilisateur = %s AND obju.EstActif = TRUE
         LIMIT 1
@@ -53,9 +53,9 @@ def user_active_theme(user_id):
     conn = get_connection()
     cur = conn.cursor()
     cur.execute("""
-        SELECT obj.Nom as name, t.Image
+        SELECT obj.Nom as name
         FROM ObjetUtilisateur obju
-        JOIN ObjetCosmetique obj ON obju.IdObjetCosmetique = obj.Id
+        JOIN Objet obj ON obju.IdObjet = obj.Id
         JOIN Theme t ON obj.Id = t.Id
         WHERE obju.IdUtilisateur = %s AND obju.EstActif = TRUE
     """, (user_id,))
@@ -68,10 +68,9 @@ def user_badges(user_id):
     conn = get_connection()
     cur = conn.cursor()
     cur.execute("""
-        SELECT obj.Id as id, obj.Nom as name, obj.Description as description, 
-               b.Image as image, obju.EstActif as actif
-        FROM ObjetCosmetique obj
-        JOIN ObjetUtilisateur obju ON obj.Id = obju.IdObjetCosmetique
+        SELECT obj.Id, obj.Nom as name, obj.Description, obju.EstActif as actif
+        FROM Objet obj
+        JOIN ObjetUtilisateur obju ON obj.Id = obju.IdObjet
         JOIN Badge b ON obj.Id = b.Id
         WHERE obju.IdUtilisateur = %s
         ORDER BY obj.Id
@@ -80,14 +79,14 @@ def user_badges(user_id):
     conn.close()
     return results
 
-def user_cosmetiques(user_id):
+def user_cosmetics(user_id):
     conn = get_connection()
     cur = conn.cursor()
     cur.execute("""
-        SELECT obj.Id as id, obj.Nom as name, obj.Description as description,
-               c.Icone as icone, obju.EstActif as actif
-        FROM ObjetCosmetique obj
-        JOIN ObjetUtilisateur obju ON obj.Id = obju.IdObjetCosmetique
+        SELECT obj.Id, obj.Nom as name, obj.Description,
+               c.Icone as icon, obju.EstActif as actif
+        FROM Objet obj
+        JOIN ObjetUtilisateur obju ON obj.Id = obju.IdObjet
         JOIN Cosmetique c ON obj.Id = c.Id
         WHERE obju.IdUtilisateur = %s
         ORDER BY obj.Id
@@ -103,7 +102,7 @@ def activate_title(user_id, title_id):
         cur.execute("""
             UPDATE ObjetUtilisateur 
             SET EstActif = FALSE
-            WHERE IdUtilisateur = %s AND IdObjetCosmetique IN (
+            WHERE IdUtilisateur = %s AND IdObjet IN (
                 SELECT Id FROM Titre
             )
         """, (user_id,))
@@ -111,7 +110,7 @@ def activate_title(user_id, title_id):
         cur.execute("""
             UPDATE ObjetUtilisateur 
             SET EstActif = TRUE
-            WHERE IdUtilisateur = %s AND IdObjetCosmetique = %s
+            WHERE IdUtilisateur = %s AND IdObjet = %s
         """, (user_id, title_id))
         conn.commit()
         return True
@@ -129,14 +128,14 @@ def activate_theme(user_id, theme_id):
         cur.execute("""
             UPDATE ObjetUtilisateur 
             SET EstActif = FALSE
-            WHERE IdUtilisateur = %s AND IdObjetCosmetique IN (
+            WHERE IdUtilisateur = %s AND IdObjet IN (
                 SELECT Id FROM Theme
             )
         """, (user_id,))
         cur.execute("""
             UPDATE ObjetUtilisateur 
             SET EstActif = TRUE
-            WHERE IdUtilisateur = %s AND IdObjetCosmetique = %s
+            WHERE IdUtilisateur = %s AND IdObjet = %s
         """, (user_id, theme_id))
         conn.commit()
         return True
@@ -154,7 +153,7 @@ def deactivate_theme(user_id):
         cur.execute("""
             UPDATE ObjetUtilisateur 
             SET EstActif = FALSE
-            WHERE IdUtilisateur = %s AND IdObjetCosmetique IN (
+            WHERE IdUtilisateur = %s AND IdObjet IN (
                 SELECT Id FROM Theme
             )
         """, (user_id,))
@@ -172,7 +171,7 @@ def get_all_titles():
     cur = conn.cursor()
     cur.execute("""
         SELECT obj.Id, obj.Nom as name, obj.Description, obj.Prix as price
-        FROM ObjetCosmetique obj
+        FROM Objet obj
         JOIN Titre t ON obj.Id = t.Id
     """)
     results = cur.fetchall()
@@ -183,8 +182,8 @@ def get_all_badges():
     conn = get_connection()
     cur = conn.cursor()
     cur.execute("""
-        SELECT obj.Id, obj.Nom as name, obj.Description, obj.Prix as price, b.Image
-        FROM ObjetCosmetique obj
+        SELECT obj.Id, obj.Nom as name, obj.Description, obj.Prix as price
+        FROM Objet obj
         JOIN Badge b ON obj.Id = b.Id
     """)
     results = cur.fetchall()
@@ -195,8 +194,8 @@ def get_all_themes():
     conn = get_connection()
     cur = conn.cursor()
     cur.execute("""
-        SELECT obj.Id, obj.Nom as name, obj.Description, obj.Prix as price, t.Image
-        FROM ObjetCosmetique obj
+        SELECT obj.Id, obj.Nom as name, obj.Description, obj.Prix as price
+        FROM Objet obj
         JOIN Theme t ON obj.Id = t.Id
     """)
     results = cur.fetchall()
@@ -209,7 +208,7 @@ def get_all_cosmetic():
     cur = conn.cursor()
     cur.execute("""
         SELECT obj.Id, obj.Nom as name, obj.Description, obj.Prix as price, c.Icone
-        FROM ObjetCosmetique obj
+        FROM Objet obj
         JOIN Cosmetique c ON obj.Id = c.Id
     """)
     results = cur.fetchall()
@@ -222,11 +221,11 @@ def get_badges_not_owned(user_id):
     conn = get_connection()
     cur = conn.cursor()
     cur.execute("""
-        SELECT obj.Id, obj.Nom as name, obj.Description, obj.Prix as price, b.Image
-        FROM ObjetCosmetique obj
+        SELECT obj.Id, obj.Nom as name, obj.Description, obj.Prix as price
+        FROM Objet obj
         JOIN Badge b ON obj.Id = b.Id
-        LEFT JOIN ObjetUtilisateur obju ON obj.Id = obju.IdObjetCosmetique AND obju.IdUtilisateur = %s
-        WHERE obju.IdObjetCosmetique IS NULL
+        LEFT JOIN ObjetUtilisateur obju ON obj.Id = obju.IdObjet AND obju.IdUtilisateur = %s
+        WHERE obju.IdObjet IS NULL
     """, (user_id,))
     results = cur.fetchall()
     conn.close()
@@ -236,11 +235,11 @@ def get_themes_not_owned(user_id):
     conn = get_connection()
     cur = conn.cursor()
     cur.execute("""
-        SELECT obj.Id, obj.Nom as name, obj.Description, obj.Prix as price, t.Image
-        FROM ObjetCosmetique obj
+        SELECT obj.Id, obj.Nom as name, obj.Description, obj.Prix as price
+        FROM Objet obj
         JOIN Theme t ON obj.Id = t.Id
-        LEFT JOIN ObjetUtilisateur obju ON obj.Id = obju.IdObjetCosmetique AND obju.IdUtilisateur = %s
-        WHERE obju.IdObjetCosmetique IS NULL
+        LEFT JOIN ObjetUtilisateur obju ON obj.Id = obju.IdObjet AND obju.IdUtilisateur = %s
+        WHERE obju.IdObjet IS NULL
     """, (user_id,))
     results = cur.fetchall()
     conn.close()
@@ -251,24 +250,24 @@ def get_titles_not_owned(user_id):
     cur = conn.cursor()
     cur.execute("""
         SELECT obj.Id, obj.Nom as name, obj.Description, obj.Prix as price
-        FROM ObjetCosmetique obj
+        FROM Objet obj
         JOIN Titre t ON obj.Id = t.Id
-        LEFT JOIN ObjetUtilisateur obju ON obj.Id = obju.IdObjetCosmetique AND obju.IdUtilisateur = %s
-        WHERE obju.IdObjetCosmetique IS NULL
+        LEFT JOIN ObjetUtilisateur obju ON obj.Id = obju.IdObjet AND obju.IdUtilisateur = %s
+        WHERE obju.IdObjet IS NULL
     """, (user_id,))
     results = cur.fetchall()
     conn.close()
     return results
 
-def get_cosmetic_not_owned(user_id):
+def get_cosmetics_not_owned(user_id):
     conn = get_connection()
     cur = conn.cursor()
     cur.execute("""
         SELECT obj.Id, obj.Nom as name, obj.Description, obj.Prix as price, c.Icone
-        FROM ObjetCosmetique obj
+        FROM Objet obj
         JOIN Cosmetique c ON obj.Id = c.Id
-        LEFT JOIN ObjetUtilisateur obju ON obj.Id = obju.IdObjetCosmetique AND obju.IdUtilisateur = %s
-        WHERE obju.IdObjetCosmetique IS NULL
+        LEFT JOIN ObjetUtilisateur obju ON obj.Id = obju.IdObjet AND obju.IdUtilisateur = %s
+        WHERE obju.IdObjet IS NULL
     """, (user_id,))
     results = cur.fetchall()
     conn.close()
@@ -280,7 +279,7 @@ def buy_object(object_id, user_id, price):
     try:
         cur.execute("""
             SELECT * FROM ObjetUtilisateur
-            WHERE IdObjetCosmetique = %s AND IdUtilisateur = %s
+            WHERE IdObjet = %s AND IdUtilisateur = %s
         """, (object_id, user_id))
         if cur.fetchone():
             return False
@@ -295,12 +294,12 @@ def buy_object(object_id, user_id, price):
             return False
 
         cur.execute("""
-            INSERT INTO ObjetUtilisateur (IdObjetCosmetique, IdUtilisateur)
+            INSERT INTO ObjetUtilisateur (IdObjet, IdUtilisateur)
             VALUES (%s, %s)
         """, (object_id, user_id))
 
         cur.execute("""
-            INSERT INTO Transaction (Montant, IdObjetCosmetique, IdUtilisateur, IdContribution)
+            INSERT INTO Transaction (Montant, IdObjet, IdUtilisateur, IdContribution)
             VALUES (%s, %s, %s, NULL)
         """, (-price, object_id, user_id))
 
@@ -316,8 +315,8 @@ def get_lasts_items(user_id=None, n=3):
     conn = get_connection()
     cur = conn.cursor()
     cur.execute("""
-        SELECT obj.Id, obj.Nom as name, obj.Description, obj.Prix as price, EXISTS (SELECT * FROM ObjetUtilisateur obju WHERE obju.IdObjetCosmetique = obj.Id AND obju.IdUtilisateur = %s) as is_bought
-        FROM ObjetCosmetique obj
+        SELECT obj.Id, obj.Nom as name, obj.Description, obj.Prix as price, EXISTS (SELECT * FROM ObjetUtilisateur obju WHERE obju.IdObjet = obj.Id AND obju.IdUtilisateur = %s) as is_bought
+        FROM Objet obj
         JOIN Cosmetique c ON obj.Id = c.Id
         ORDER BY obj.Id DESC
         LIMIT %s
