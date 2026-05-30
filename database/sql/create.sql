@@ -61,7 +61,7 @@ CREATE TABLE ObjetUtilisateur (
 CREATE TABLE Contribution (
     Id SERIAL PRIMARY KEY,
     Date DATE NOT NULL DEFAULT CURRENT_DATE,
-    IdUtilisateur INTEGER NOT NULL REFERENCES Utilisateur(IdUtilisateur) ON DELETE CASCADE,
+    IdUtilisateur INTEGER NOT NULL REFERENCES Utilisateur(IdUtilisateur),
     EstSupprime BOOLEAN NOT NULL DEFAULT FALSE
 );
 
@@ -90,7 +90,7 @@ CREATE TABLE Transaction (
     Date DATE NOT NULL DEFAULT CURRENT_DATE,
     Montant INTEGER NOT NULL,
     IdObjet INTEGER REFERENCES Objet(Id) ON DELETE SET NULL,
-    IdUtilisateur INTEGER NOT NULL REFERENCES Utilisateur(IdUtilisateur) ON DELETE CASCADE,
+    IdUtilisateur INTEGER NOT NULL REFERENCES Utilisateur(IdUtilisateur),
     IdContribution INTEGER REFERENCES Contribution(Id) ON DELETE SET NULL
 );
 
