@@ -31,20 +31,22 @@ HAVING COUNT(*) = (
 );
 
 -- Les résumés les mieux notés (note moyenne maximale) pour chaque cours
-WITH notes AS (
-    SELECT r.Id, r.Code, r.Titre AS title,
-           AVG(e.Note) AS avg_rating,
-           RANK() OVER (PARTITION BY r.Code ORDER BY AVG(e.Note) DESC) AS rank
-    FROM Resume r
-    JOIN Contribution c ON r.Id = c.Id
-    JOIN Evaluation e ON r.Id = e.IdResume
-    WHERE c.EstSupprime = FALSE
-    GROUP BY r.Id, r.Code, r.Titre
+SELECT r.Code, r.Titre, AVG(e.Note)
+FROM Resume r
+JOIN Contribution c ON r.Id = c.Id
+JOIN Evaluation e ON r.Id = e.IdResume
+WHERE c.EstSupprime = FALSE
+GROUP BY r.Id, r.Code, r.Titre
+HAVING AVG(e.Note) = (
+    SELECT MAX(AVG(e2.Note))
+    FROM Resume r2
+    JOIN Contribution c2 ON r2.Id = c2.Id
+    JOIN Evaluation e2 ON r2.Id = e2.IdResume
+    WHERE c2.EstSupprime = FALSE
+    AND r2.Code = r.Code
+    GROUP BY r2.Id
 )
-SELECT code, title, avg_rating
-FROM notes
-WHERE rank = 1
-ORDER BY code;
+ORDER BY r.Code;
 
 -- Les utilisateurs n'ayant jamais publié de résumé
 SELECT u.IdUtilisateur AS id, u.Nom AS name
