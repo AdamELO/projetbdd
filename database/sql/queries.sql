@@ -38,13 +38,16 @@ JOIN Evaluation e ON r.Id = e.IdResume
 WHERE c.EstSupprime = FALSE
 GROUP BY r.Id, r.Code, r.Titre
 HAVING AVG(e.Note) = (
-    SELECT MAX(AVG(e2.Note))
-    FROM Resume r2
-    JOIN Contribution c2 ON r2.Id = c2.Id
-    JOIN Evaluation e2 ON r2.Id = e2.IdResume
-    WHERE c2.EstSupprime = FALSE
-    AND r2.Code = r.Code
-    GROUP BY r2.Id
+    SELECT MAX(avg_note)
+    FROM (
+        SELECT AVG(e2.Note) AS avg_note
+        FROM Resume r2
+        JOIN Contribution c2 ON r2.Id = c2.Id
+        JOIN Evaluation e2 ON r2.Id = e2.IdResume
+        WHERE c2.EstSupprime = FALSE
+        AND r2.Code = r.Code
+        GROUP BY r2.Id
+    ) sub
 )
 ORDER BY r.Code;
 
